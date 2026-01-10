@@ -99,6 +99,43 @@ class GSTFilingModelTests(TestCase):
         
         self.assertTrue(filing.filing_locked)
         self.assertEqual(filing.lock_reason, 'Under review')
+    
+    def test_calculate_totals(self):
+        """Test calculate totals from invoices."""
+        filing = GSTFiling.objects.create(
+            user=self.user,
+            filing_type='GSTR1',
+            financial_year='2024-25',
+            month=10,
+            year=2024,
+            status='draft'
+        )
+        
+        # Create invoices
+        Invoice.objects.create(
+            filing=filing,
+            invoice_number='INV001',
+            invoice_date='2024-10-15',
+            invoice_type='b2b',
+            taxable_value=Decimal('10000.00'),
+            igst=Decimal('1800.00'),
+            total_tax=Decimal('1800.00')
+        )
+        Invoice.objects.create(
+            filing=filing,
+            invoice_number='INV002',
+            invoice_date='2024-10-16',
+            invoice_type='b2b',
+            taxable_value=Decimal('20000.00'),
+            igst=Decimal('3600.00'),
+            total_tax=Decimal('3600.00')
+        )
+        
+        # Calculate totals
+        filing.calculate_totals()
+        
+        self.assertEqual(filing.total_taxable_value, Decimal('30000.00'))
+        self.assertEqual(filing.total_tax, Decimal('5400.00'))
 
 
 class GSTFilingAPITests(APITestCase):

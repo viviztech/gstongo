@@ -101,7 +101,31 @@ class ProformaInvoice(models.Model):
         return timezone.now() > self.valid_until
 
 
-class Invoice(models.FriendlyFilenameMixin, models.Model):
+class FriendlyFilenameMixin:
+    """Mixin to generate friendly filenames for files."""
+    
+    def get_friendly_filename(self, prefix=''):
+        """Generate a friendly filename for the model instance."""
+        if hasattr(self, 'invoice_number'):
+            invoice_num = self.invoice_number
+        elif hasattr(self, 'number'):
+            invoice_num = self.number
+        else:
+            invoice_num = str(self.pk)
+        
+        if hasattr(self, 'user') and hasattr(self.user, 'email'):
+            email_parts = self.user.email.split('@')
+            email_prefix = email_parts[0] if email_parts else 'user'
+        else:
+            email_prefix = 'file'
+        
+        # Sanitize email prefix for filename
+        email_prefix = ''.join(c for c in email_prefix if c.isalnum() or c in '-_')
+        
+        return f"{prefix}{invoice_num}_{email_prefix}"
+
+
+class Invoice(FriendlyFilenameMixin, models.Model):
     """Final invoice model (generated from proforma)."""
     
     INVOICE_STATUS = [

@@ -3,12 +3,15 @@ Views for GST Filing module.
 """
 import pandas as pd
 import uuid
+import io
 from django.conf import settings
+from django.http import HttpResponse
 from rest_framework import viewsets, status, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.db import transaction
+from django.utils import timezone
 
 from .models import GSTFiling, GSTR1Details, GSTR3BDetails, GSTR9BDetails, Invoice, FilingDocument
 from .serializers import (
@@ -219,7 +222,7 @@ class GSTFilingViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def templates(self, request):
-        """Get filing template for download."""
+        """Get filing template information."""
         filing_type = request.query_params.get('type')
         financial_year = request.query_params.get('financial_year')
         
@@ -229,38 +232,193 @@ class GSTFilingViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Generate template based on filing type
+        # Template configurations
         templates = {
             'GSTR1': {
                 'columns': [
-                    'invoice_number', 'invoice_date', 'invoice_type',
-                    'counterparty_gstin', 'counterparty_name',
-                    'taxable_value', 'igst', 'cgst', 'sgst', 'total_tax', 'hsn_code'
+                    {'name': 'invoice_number', 'type': 'string', 'required': True, 'description': 'Invoice number'},
+                    {'name': 'invoice_date', 'type': 'date', 'required': True, 'description': 'Invoice date (YYYY-MM-DD)'},
+                    {'name': 'invoice_type', 'type': 'string', 'required': True, 'description': 'b2b, b2c, export, debit-note, credit-note'},
+                    {'name': 'counterparty_gstin', 'type': 'string', 'required': False, 'description': 'Recipient GSTIN (15 chars for B2B)'},
+                    {'name': 'counterparty_name', 'type': 'string', 'required': True, 'description': 'Recipient name'},
+                    {'name': 'taxable_value', 'type': 'number', 'required': True, 'description': 'Taxable amount'},
+                    {'name': 'igst', 'type': 'number', 'required': False, 'description': 'IGST amount'},
+                    {'name': 'cgst', 'type': 'number', 'required': False, 'description': 'CGST amount'},
+                    {'name': 'sgst', 'type': 'number', 'required': False, 'description': 'SGST/UTGST amount'},
+                    {'name': 'cess', 'type': 'number', 'required': False, 'description': 'Cess amount'},
+                    {'name': 'total_tax', 'type': 'number', 'required': True, 'description': 'Total tax amount'},
+                    {'name': 'hsn_code', 'type': 'string', 'required': False, 'description': 'HSN/SAC code (8 digits)'},
+                    {'name': 'export_port', 'type': 'string', 'required': False, 'description': 'Export port (for exports)'},
+                    {'name': 'shipping_bill_number', 'type': 'string', 'required': False, 'description': 'Shipping bill number (for exports)'},
+                    {'name': 'shipping_bill_date', 'type': 'date', 'required': False, 'description': 'Shipping bill date (for exports)'},
                 ],
-                'description': 'Template for GSTR-1 outward supplies data'
+                'description': 'Template for GSTR-1 outward supplies data',
+                'instructions': [
+                    '1. Fill in all mandatory columns',
+                    '2. For B2B invoices, counterparty_gstin must be 15 characters',
+                    '3. For exports, fill export details columns',
+                    '4. Tax amounts should match taxable_value * tax rate',
+                    '5. Date format: YYYY-MM-DD'
+                ]
             },
             'GSTR3B': {
                 'columns': [
-                    'description', 'taxable_value', 'igst', 'cgst', 'sgst', 'cess'
+                    {'name': 'description', 'type': 'string', 'required': True, 'description': 'Tax category description'},
+                    {'name': 'taxable_value', 'type': 'number', 'required': True, 'description': 'Taxable value'},
+                    {'name': 'igst', 'type': 'number', 'required': False, 'description': 'IGST amount'},
+                    {'name': 'cgst', 'type': 'number', 'required': False, 'description': 'CGST amount'},
+                    {'name': 'sgst', 'type': 'number', 'required': False, 'description': 'SGST amount'},
+                    {'name': 'cess', 'type': 'number', 'required': False, 'description': 'Cess amount'},
                 ],
-                'description': 'Template for GSTR-3B summary data'
+                'description': 'Template for GSTR-3B summary data',
+                'instructions': [
+                    '1. Enter summary data for outward supplies',
+                    '2. Include ITC reversal amounts',
+                    '3. Include interest and late fee if applicable'
+                ]
             },
             'GSTR9B': {
                 'columns': [
-                    'item_description', 'outward_supplies', 'inward_supplies',
-                    'tax_collected', 'tax_deposited', 'itc_claimed', 'itc_reversed'
+                    {'name': 'item_description', 'type': 'string', 'required': True, 'description': 'Item/category description'},
+                    {'name': 'outward_supplies', 'type': 'number', 'required': True, 'description': 'Total outward supplies'},
+                    {'name': 'inward_supplies', 'type': 'number', 'required': True, 'description': 'Total inward supplies'},
+                    {'name': 'tax_collected', 'type': 'number', 'required': True, 'description': 'Total tax collected'},
+                    {'name': 'tax_deposited', 'type': 'number', 'required': True, 'description': 'Total tax deposited'},
+                    {'name': 'itc_claimed', 'type': 'number', 'required': True, 'description': 'ITC claimed'},
+                    {'name': 'itc_reversed', 'type': 'number', 'required': True, 'description': 'ITC reversed'},
                 ],
-                'description': 'Template for GSTR-9B annual return data'
+                'description': 'Template for GSTR-9B annual return data',
+                'instructions': [
+                    '1. Enter annual summary data',
+                    '2. Include all ITC details',
+                    '3. Ensure tax collected matches deposits'
+                ]
             }
         }
         
         if filing_type not in templates:
             return Response(
-                {'error': 'Invalid filing type.'},
+                {'error': 'Invalid filing type. Use GSTR1, GSTR3B, or GSTR9B.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
         return Response(templates[filing_type])
+    
+    @action(detail=False, methods=['get'])
+    def download_template(self, request):
+        """Download Excel template for filing."""
+        filing_type = request.query_params.get('type')
+        financial_year = request.query_params.get('financial_year')
+        
+        if not filing_type or not financial_year:
+            return Response(
+                {'error': 'Filing type and financial year are required.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Template column definitions
+        templates = {
+            'GSTR1': [
+                'invoice_number', 'invoice_date', 'invoice_type',
+                'counterparty_gstin', 'counterparty_name',
+                'taxable_value', 'igst', 'cgst', 'sgst', 'cess',
+                'total_tax', 'hsn_code', 'export_port',
+                'shipping_bill_number', 'shipping_bill_date'
+            ],
+            'GSTR3B': [
+                'description', 'taxable_value', 'igst', 'cgst', 'sgst', 'cess'
+            ],
+            'GSTR9B': [
+                'item_description', 'outward_supplies', 'inward_supplies',
+                'tax_collected', 'tax_deposited', 'itc_claimed', 'itc_reversed'
+            ]
+        }
+        
+        if filing_type not in templates:
+            return Response(
+                {'error': 'Invalid filing type. Use GSTR1, GSTR3B, or GSTR9B.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create DataFrame with template columns
+        columns = templates[filing_type]
+        df = pd.DataFrame(columns=columns)
+        
+        # Add sample data row for reference
+        sample_data = {
+            'GSTR1': {
+                'invoice_number': 'INV-001',
+                'invoice_date': '2024-04-01',
+                'invoice_type': 'b2b',
+                'counterparty_gstin': '27AAAAA0000A1Z5',
+                'counterparty_name': 'Sample Company Pvt Ltd',
+                'taxable_value': 10000.00,
+                'igst': 1800.00,
+                'cgst': 0.00,
+                'sgst': 0.00,
+                'cess': 0.00,
+                'total_tax': 1800.00,
+                'hsn_code': '85311000',
+                'export_port': '',
+                'shipping_bill_number': '',
+                'shipping_bill_date': ''
+            },
+            'GSTR3B': {
+                'description': 'Outward taxable supplies',
+                'taxable_value': 50000.00,
+                'igst': 9000.00,
+                'cgst': 0.00,
+                'sgst': 0.00,
+                'cess': 0.00
+            },
+            'GSTR9B': {
+                'item_description': 'Total Outward Supplies',
+                'outward_supplies': 600000.00,
+                'inward_supplies': 400000.00,
+                'tax_collected': 108000.00,
+                'tax_deposited': 108000.00,
+                'itc_claimed': 72000.00,
+                'itc_reversed': 5000.00
+            }
+        }
+        
+        # Add sample row (first row after header)
+        df = pd.concat([df, pd.DataFrame([sample_data[filing_type]])], ignore_index=True)
+        
+        # Create Excel file in memory
+        buffer = io.BytesIO()
+        with pd.ExcelWriter(buffer, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name=filing_type)
+            
+            # Add instructions sheet
+            instructions = pd.DataFrame({
+                'Instruction': [
+                    f'This is the {filing_type} template for financial year {financial_year}',
+                    'Fill in your data starting from row 2 (row 1 is the header)',
+                    'Do not change the column names or order',
+                    'For dates, use format YYYY-MM-DD',
+                    'For numbers, do not use thousand separators',
+                    'Save as .xlsx format and upload',
+                    '',
+                    'Invoice Types:',
+                    '  - b2b: Business to Business (requires 15-char GSTIN)',
+                    '  - b2c: Business to Consumer',
+                    '  - export: Export invoices',
+                    '  - debit-note: Debit notes',
+                    '  - credit-note: Credit notes'
+                ]
+            })
+            instructions.to_excel(writer, index=False, sheet_name='Instructions')
+        
+        # Prepare response
+        buffer.seek(0)
+        response = HttpResponse(
+            buffer.getvalue(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename={filing_type}_template_{financial_year}.xlsx'
+        
+        return response
 
 
 class InvoiceViewSet(viewsets.ModelViewSet):

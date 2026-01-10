@@ -84,6 +84,22 @@ class GSTFiling(models.Model):
         self.filing_reference_number = reference_number
         self.filed_at = timezone.now()
         self.save()
+    
+    def calculate_totals(self):
+        """Calculate and update filing totals from invoices."""
+        from django.db.models import Sum
+        from decimal import Decimal
+        
+        invoices = self.invoices.all()
+        totals = invoices.aggregate(
+            total_taxable=Sum('taxable_value'),
+            total_tax=Sum('total_tax')
+        )
+        
+        self.total_taxable_value = totals['total_taxable'] or Decimal('0')
+        self.total_tax = totals['total_tax'] or Decimal('0')
+        self.save()
+        return self
 
 
 class GSTR1Details(models.Model):

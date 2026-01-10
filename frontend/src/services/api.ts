@@ -146,6 +146,9 @@ export const gstFilingAPI = {
   
   downloadTemplate: (type: string, financialYear: string) =>
     api.get('/gst/filings/templates/', { params: { type, financial_year: financialYear } }),
+  
+  downloadTemplateFile: (type: string, financialYear: string): string =>
+    `${API_BASE_URL}/gst/filings/download_template/?type=${type}&financial_year=${financialYear}`,
 };
 
 // Invoice API

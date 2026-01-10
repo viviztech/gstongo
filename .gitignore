@@ -1,0 +1,62 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Environment
+.env
+.env.local
+*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Frontend
+frontend/node_modules/
+frontend/build/
+frontend/.env
+
+# Mobile
+mobile/.dart_tool/
+mobile/.packages
+mobile/build/
+
+# Logs
+logs/
+*.log
+
+# Cache
+.cache/
+.ruff_cache/
+.mypy_cache/
+
+# Railway
+!railway.json
+.netlify
