@@ -4,11 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "cd backend && gunicorn gstongo.wsgi:application --bind 0.0.0.0:$PORT",
-    "healthcheckPath": "/api/v1/auth/profile/",
-    "healthcheckTimeout": 30,
-    "restartPolicyType": "on-failure",
-    "restartPolicyMaxRetries": 3
+    "startCommand": "cd backend && gunicorn gstongo.wsgi:application --bind 0.0.0.0:$PORT"
   },
   "name": "gstongo"
 }
