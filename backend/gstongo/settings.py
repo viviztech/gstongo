@@ -79,13 +79,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gstongo.wsgi.application'
 
-# Database - Using SQLite for development
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database - Using DATABASE_URL from environment or SQLite for development
+import dj_database_url
+db_from_env = os.environ.get('DATABASE_URL', '')
+if db_from_env:
+    DATABASES = {
+        'default': dj_database_url.parse(db_from_env)
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # Cache - Using local memory cache for development
 CACHES = {
