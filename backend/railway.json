@@ -5,7 +5,7 @@
     "buildCommand": "pip install -r requirements.txt"
   },
   "deploy": {
-    "startCommand": "/workspace/backend/venv/bin/gunicorn gstongo.wsgi:application --chdir /workspace/backend --bind 0.0.0.0:8000",
+    "startCommand": "python -m gunicorn gstongo.wsgi:application --chdir backend --bind 0.0.0.0:8000",
     "healthcheckPath": "/api/v1/auth/profile/"
   },
   "name": "gstongo-backend"
