@@ -3,8 +3,6 @@
  */
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { userAPI } from '../../services/api';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
@@ -19,26 +17,11 @@ const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, roles }) => {
   if (!token) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
-  
-  // Fetch user profile to check roles
-  const { data: profile, isLoading } = useQuery({
-    queryKey: ['profile'],
-    queryFn: () => userAPI.getProfile(),
-    enabled: !!token,
-  });
-  
-  if (isLoading) {
-    return null; // Or show loading spinner
-  }
-  
-  // Check role-based access
-  if (roles && roles.length > 0) {
-    const userRole = profile?.data?.is_staff ? 'admin' : 'user';
-    if (!roles.includes(userRole)) {
-      return <Navigate to="/dashboard" replace />;
-    }
-  }
-  
+
+  // For role-based access, we don't fetch profile here to avoid re-fetching
+  // The profile should be fetched by the page/component that needs it
+  // Role checking will be done by the individual pages
+
   return <>{children}</>;
 };
 
