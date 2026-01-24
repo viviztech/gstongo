@@ -283,7 +283,7 @@ class Invoice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     class Meta:
-        db_table = 'invoices'
+        db_table = 'gst_invoices'
         verbose_name = 'Invoice'
         verbose_name_plural = 'Invoices'
     

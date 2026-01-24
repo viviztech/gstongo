@@ -1,0 +1,53 @@
+# =========================
+# Node / Vite / React
+# =========================
+node_modules/
+dist/
+build/
+.cache/
+.vite/
+
+# =========================
+# Logs
+# =========================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# Environment files
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
+# OS / Editor junk
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# =========================
+# TypeScript
+# =========================
+*.tsbuildinfo
+
+# =========================
+# Tailwind / PostCSS
+# =========================
+.postcssrc
+.postcssrc.json
+.postcssrc.js
+
+# =========================
+# Docker
+# =========================
+*.log
+
+# =========================
+# Build output (served by nginx)
+# =========================
+dist/

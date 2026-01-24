@@ -1,0 +1,47 @@
+name: Deploy Backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+    - name: Build Docker image
+      run: |
+        cd backend
+        docker build -t sribalajidevops/gstongo-backend:latest .
+
+    - name: Push Docker image
+      run: |
+        docker push sribalajidevops/gstongo-backend:latest
+
+    - name: Deploy to EC2
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ${{ secrets.EC2_USER }}
+        key: ${{ secrets.EC2_SSH_KEY }}
+        script: |
+          docker pull sribalajidevops/gstongo-backend:latest
+          docker rm -f gstongo || true
+          docker run -d \
+            --name gstongo \
+            -p 8000:8000 \
+            -v ~/gstongo-db.sqlite3:/app/db.sqlite3 \
+            -v ~/gstongo-logs:/app/logs \
+            sribalajidevops/gstongo-backend:latest

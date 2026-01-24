@@ -17,7 +17,7 @@ urlpatterns = [
     path('api/v1/admin/', include('apps.admin_portal.urls')),
     
     # Swagger/OpenAPI Documentation
-    path('api-docs/', include('drf_yasg.urls')),
+    # path('api-docs/', include('drf_yasg.urls')),
 ]
 
 if settings.DEBUG:
