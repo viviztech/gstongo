@@ -1,6 +1,6 @@
 class ApiConfig {
-  static const String baseUrl = 'http://localhost:8000/api/v1';
-  static const String wsUrl = 'ws://localhost:8000/ws';
+  static const String baseUrl = 'http://51.21.196.208:8000/api/v1';
+  static const String wsUrl = 'ws://51.21.196.208:8000/ws';
   
   // Endpoints
   static const String login = '/auth/login/';

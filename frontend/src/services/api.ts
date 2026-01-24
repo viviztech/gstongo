@@ -112,34 +112,36 @@ export const gstFilingAPI = {
 /* ===================== INVOICES ===================== */
 
 export const invoiceAPI = {
-  getInvoices: () => api.get("/invoices/invoices/"),
-  getInvoice: (id: string) => api.get(`/invoices/invoices/${id}/`),
+  getInvoices: (params?: any) => api.get("/invoices/", { params }),
+  getInvoice: (id: string) => api.get(`/invoices/${id}/`),
   initiatePayment: (invoiceId: string) =>
-    api.post("/invoices/payments/initiate/", { invoice_id: invoiceId }),
+    api.post("/payments/initiate/", { invoice_id: invoiceId }),
 };
 
 /* ===================== ADMIN ===================== */
 
 export const adminAPI = {
   getDashboard: () => api.get("/admin/dashboard/"),
-  getPaymentReport: () => api.get("/admin/dashboard/payment_report/"),
+  getUsers: () => api.get("/admin/users/"),
+  getFilings: () => api.get("/admin/filings/"),
+  getPayments: () => api.get("/admin/payments/"),
 };
 
 // ---------------- USER ----------------
 export const userAPI = {
-  getProfile: () => api.get("/api/v1/auth/profile/"),
+  getProfile: () => api.get("/auth/profile/"),
 
   updateProfile: (data: any) =>
-    api.patch("/api/v1/auth/profile/", data),
+    api.patch("/auth/profile/", data),
 
   getNotifications: () =>
-    api.get("/api/v1/notifications/list/"),
+    api.get("/notifications/"),
 
   markNotificationRead: (id: string) =>
-    api.post(`/api/v1/notifications/list/${id}/mark_as_read/`),
+    api.post(`/notifications/${id}/mark_as_read/`),
 
   getUnreadCount: () =>
-    api.get("/api/v1/notifications/list/unread_count/"),
+    api.get("/notifications/unread_count/"),
 };
 
 
