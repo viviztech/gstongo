@@ -217,7 +217,7 @@ class InvoicesScreen extends StatelessWidget {
 
       final pendingAmount = invoices
           .where((i) => i['status'] != 'paid')
-          .fold(0.0, (sum, i) => sum + i['amount'] as double);
+          .fold(0.0, (sum, i) => sum + i['amount']);
 
       return {
         'invoices': invoices,
