@@ -1,0 +1,48 @@
+name: Deploy Frontend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "frontend/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build frontend image
+        run: |
+          cd frontend
+          docker build -t sribalajidevops/gstongo-frontend:latest .
+
+      - name: Push image
+        run: |
+          docker push sribalajidevops/gstongo-frontend:latest
+
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker pull sribalajidevops/gstongo-frontend:latest
+
+            docker stop gstongo-frontend || true
+            docker rm gstongo-frontend || true
+
+            docker run -d \
+              --name gstongo-frontend \
+              -p 80:80 \
+              sribalajidevops/gstongo-frontend:latest

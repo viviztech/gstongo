@@ -60,7 +60,7 @@ const RegisterPage: React.FC = () => {
         Create Account
       </h2>
       <p className="text-gray-600 text-center mb-6">
-        Start filing GST returns with GSTONGO
+        Start filling GST returns with GSTONGO
       </p>
       
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
