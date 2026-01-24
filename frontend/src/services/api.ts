@@ -88,10 +88,16 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (data: any) => api.post("/auth/register/", data),
   login: (email: string, password: string) =>
-    api.post("/auth/login/", { email, password }),
+    api.post("/api/v1/auth/login/", { email, password }),
   refreshToken: (refresh: string) =>
     api.post("/auth/token/refresh/", { refresh }),
   getProfile: () => api.get("/auth/profile/"),
+  forgotPassword: (email: string) =>
+    api.post("/auth/password/request_reset/", { email }),
+  verifyResetToken: (token: string) =>
+    api.post("/auth/password/verify_token/", { token }),
+  resetPassword: (token: string, newPassword: string, newPasswordConfirm: string) =>
+    api.post("/auth/password/confirm_reset/", { token, new_password: newPassword, new_password_confirm: newPasswordConfirm }),
 };
 
 /* ===================== GST ===================== */
@@ -100,10 +106,15 @@ export const gstFilingAPI = {
   getFilings: (params?: any) => api.get("/gst/filings/", { params }),
   getFiling: (id: string) => api.get(`/gst/filings/${id}/`),
   createFiling: (data: any) => api.post("/gst/filings/", data),
+  getFilingSummary: (id: string) => api.get(`/gst/filings/${id}/summary/`),
+  declareFiling: (id: string) => api.post(`/gst/filings/${id}/declare/`),
+  markNilFiling: (id: string, data: any) => api.post(`/gst/filings/${id}/mark_nil/`, data),
   uploadInvoices: (filingId: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    return api.post(`/gst/filings/${filingId}/upload_invoices/`, formData);
+    return api.post(`/gst/filings/${filingId}/upload_invoices/`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
   },
   downloadTemplateFile: (type: string, financialYear: string) =>
     `${API_BASE_URL}/api/v1/gst/filings/download_template/?type=${type}&financial_year=${financialYear}`,
