@@ -12,25 +12,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Login to DockerHub
+      - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build frontend image
+      # 🔥 Build with backend URL injected into React
+      - name: Build Frontend Image
         run: |
           cd frontend
-          docker build -t sribalajidevops/gstongo-frontend:latest .
+          docker build \
+            --build-arg VITE_BACKEND_URL=http://51.21.196.208:8000 \
+            -t sribalajidevops/gstongo-frontend:latest .
 
-      - name: Push image
+      - name: Push Image to Docker Hub
         run: |
           docker push sribalajidevops/gstongo-frontend:latest
 
-      - name: Deploy to EC2
+      # 🚀 Zero-downtime deploy on EC2
+      - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.EC2_HOST }}
@@ -45,4 +49,5 @@ jobs:
             docker run -d \
               --name gstongo-frontend \
               -p 80:80 \
+              --restart unless-stopped \
               sribalajidevops/gstongo-frontend:latest
