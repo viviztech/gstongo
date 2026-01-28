@@ -48,6 +48,6 @@ jobs:
 
             docker run -d \
               --name gstongo-frontend \
-              -p 80:80 \
+              -p 3000:80 \
               --restart unless-stopped \
               sribalajidevops/gstongo-frontend:latest
