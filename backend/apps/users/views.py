@@ -239,18 +239,21 @@ class UserProfileViewSet(viewsets.ModelViewSet):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     """Custom token obtain view with additional user data."""
-    
+
     def post(self, request, *args, **kwargs):
         response = super().post(request, *args, **kwargs)
         if response.status_code == 200:
             user = User.objects.get(email=request.data['email'])
             user.last_login_at = timezone.now()
             user.save()
-            
+
+            # Ensure profile exists (handles users created before profile was mandatory)
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+
             # Include user data in response
             response.data['user'] = UserSerializer(user).data
             response.data['profile'] = UserProfileSerializer(
-                user.profile, context={'request': request}
+                profile, context={'request': request}
             ).data
         return response
 
