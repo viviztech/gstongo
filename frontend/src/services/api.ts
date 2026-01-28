@@ -6,7 +6,7 @@ import { toast } from "react-hot-toast";
 
 /**
  * Must be defined in .env as:
- * VITE_BACKEND_URL=http://51.21.196.208:8000
+ * VITE_BACKEND_URL=https://gstongo.com
  */
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
