@@ -153,6 +153,10 @@ class UserProfile(models.Model):
         default='email'
     )
     
+    # Password Reset
+    reset_token = models.CharField(max_length=64, null=True, blank=True)
+    reset_token_created_at = models.DateTimeField(null=True, blank=True)
+    
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
