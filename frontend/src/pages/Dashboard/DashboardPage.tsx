@@ -79,7 +79,7 @@ const DashboardPage: React.FC = () => {
   
   const userData = profile?.data;
   const filingList = filings?.data || [];
-  const invoiceList = invoices?.data || [];
+  const invoiceList = invoices?.data?.invoices || [];
   
   // Calculate stats
   const totalFilings = filingList.length;

@@ -6,6 +6,7 @@ import pyotp
 from django.utils import timezone
 from django.core.mail import send_mail
 from django.conf import settings
+from django.db.models import Q
 from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -19,7 +20,9 @@ from .models import User, UserProfile, AdminProfile
 from .serializers import (
     UserSerializer, UserRegistrationSerializer, UserProfileSerializer,
     UserProfileUpdateSerializer, OTPVerificationSerializer, OTPSendSerializer,
-    AdminProfileSerializer, ChangePasswordSerializer
+    AdminProfileSerializer, ChangePasswordSerializer,
+    PasswordResetRequestSerializer, PasswordResetVerifySerializer,
+    PasswordResetConfirmSerializer
 )
 
 
@@ -308,9 +311,9 @@ class UserManagementViewSet(viewsets.ModelViewSet):
         search = request.query_params.get('search', None)
         if search:
             queryset = queryset.filter(
-                models.Q(email__icontains=search) |
-                models.Q(first_name__icontains=search) |
-                models.Q(last_name__icontains=search)
+                Q(email__icontains=search) |
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search)
             )
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
@@ -330,3 +333,149 @@ class UserManagementViewSet(viewsets.ModelViewSet):
         user.is_active = True
         user.save()
         return Response({'message': 'User activated.'})
+
+
+class PasswordResetViewSet(viewsets.ViewSet):
+    """ViewSet for password reset functionality."""
+    
+    permission_classes = [permissions.AllowAny]
+    
+    @action(detail=False, methods=['post'])
+    def request_reset(self, request):
+        """Request password reset link via email."""
+        from django.core.mail import send_mail
+        from django.utils.http import urlsafe_base64_encode
+        from django.utils.encoding import force_bytes
+        from django.contrib.auth.tokens import default_token_generator
+        import uuid
+        
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        email = serializer.validated_data['email']
+        
+        try:
+            user = User.objects.get(email=email)
+            
+            # Generate reset token (using UUID for simplicity)
+            reset_token = uuid.uuid4().hex
+            
+            # Store token in user's profile or create a reset record
+            from .models import UserProfile
+            profile, created = UserProfile.objects.get_or_create(user=user)
+            profile.reset_token = reset_token
+            profile.reset_token_created_at = timezone.now()
+            profile.save()
+            
+            # Build reset link
+            reset_link = f"{settings.FRONTEND_URL}/reset-password?token={reset_token}&uid={user.id}"
+            
+            # Send email
+            subject = 'GSTONGO - Password Reset Request'
+            message = f'''
+Dear {user.first_name},
+
+You have requested to reset your password for your GSTONGO account.
+
+Click the link below to reset your password:
+{reset_link}
+
+This link will expire in 24 hours.
+
+If you did not request this password reset, please ignore this email or contact support.
+
+Best regards,
+GSTONGO Team
+            '''
+            
+            send_mail(
+                subject,
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=True,
+            )
+            
+        except User.DoesNotExist:
+            # Don't reveal if user exists
+            pass
+        
+        return Response({
+            'message': 'If an account exists with this email, a password reset link has been sent.'
+        })
+    
+    @action(detail=False, methods=['post'])
+    def verify_token(self, request):
+        """Verify password reset token."""
+        from .models import UserProfile
+        
+        serializer = PasswordResetVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        token = serializer.validated_data['token']
+        
+        try:
+            profile = UserProfile.objects.get(reset_token=token)
+            
+            # Check if token is valid (24 hours expiry)
+            if profile.reset_token_created_at:
+                elapsed = timezone.now() - profile.reset_token_created_at
+                if elapsed.total_seconds() > 86400:  # 24 hours
+                    return Response(
+                        {'error': 'Reset token has expired.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            return Response({
+                'valid': True,
+                'user_id': profile.user_id
+            })
+            
+        except UserProfile.DoesNotExist:
+            return Response(
+                {'error': 'Invalid reset token.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
+    @action(detail=False, methods=['post'])
+    def confirm_reset(self, request):
+        """Confirm password reset with new password."""
+        from .models import UserProfile
+        
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['new_password']
+        
+        try:
+            profile = UserProfile.objects.get(reset_token=token)
+            
+            # Check if token is valid (24 hours expiry)
+            if profile.reset_token_created_at:
+                elapsed = timezone.now() - profile.reset_token_created_at
+                if elapsed.total_seconds() > 86400:  # 24 hours
+                    return Response(
+                        {'error': 'Reset token has expired.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+            
+            # Update password
+            user = profile.user
+            user.set_password(new_password)
+            user.save()
+            
+            # Clear reset token
+            profile.reset_token = None
+            profile.reset_token_created_at = None
+            profile.save()
+            
+            return Response({
+                'message': 'Password has been reset successfully.'
+            })
+            
+        except UserProfile.DoesNotExist:
+            return Response(
+                {'error': 'Invalid reset token.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
