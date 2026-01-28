@@ -26,7 +26,7 @@ jobs:
         run: |
           cd frontend
           docker build \
-            --build-arg VITE_BACKEND_URL=http://51.21.196.208:8000 \
+            --build-arg VITE_BACKEND_URL=https://gstongo.com \
             -t sribalajidevops/gstongo-frontend:latest .
 
       - name: Push Image to Docker Hub
