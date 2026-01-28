@@ -180,6 +180,14 @@ CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
     'http://localhost:8080',
+    'https://gstongo.com',
+    'https://www.gstongo.com',
+]
+
+# CSRF Settings
+CSRF_TRUSTED_ORIGINS = [
+    'https://gstongo.com',
+    'https://www.gstongo.com',
 ]
 
 # Email Configuration
@@ -199,6 +207,10 @@ TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
 # Firebase Configuration
 FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID', '')
 FIREBASE_API_KEY = os.environ.get('FIREBASE_API_KEY', '')
+
+# WhatsApp Configuration (WhatsApp Business API)
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
+WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
 
 # Payment Gateway Configuration (Razorpay)
 RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
@@ -262,3 +274,6 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880   # 5MB
 
 # Rate Limiting
 RATELIMIT_ENABLE = True
+
+# Frontend URL
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
