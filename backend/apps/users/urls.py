@@ -7,7 +7,7 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .views import (
     UserRegistrationViewSet, OTPViewSet, UserProfileViewSet,
     CustomTokenObtainPairView, ChangePasswordView, AdminProfileViewSet,
-    UserManagementViewSet
+    UserManagementViewSet, PasswordResetViewSet
 )
 
 router = DefaultRouter()
@@ -16,6 +16,7 @@ router.register(r'otp', OTPViewSet, basename='auth-otp')
 router.register(r'profile', UserProfileViewSet, basename='profile')
 router.register(r'admin', AdminProfileViewSet, basename='admin-profile')
 router.register(r'manage', UserManagementViewSet, basename='user-manage')
+router.register(r'password', PasswordResetViewSet, basename='auth-password')
 
 urlpatterns = [
     path('', include(router.urls)),

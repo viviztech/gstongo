@@ -72,22 +72,23 @@ def send_push_notification(user, title, body):
 
 class UserRegistrationViewSet(viewsets.ModelViewSet):
     """ViewSet for user registration."""
-    
+
     queryset = User.objects.all()
     serializer_class = UserRegistrationSerializer
     permission_classes = [permissions.AllowAny]
-    
+    http_method_names = ['post']  # Only allow POST for registration
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        
-        # Create user profile
-        UserProfile.objects.create(user=user)
-        
+
+        # Create user profile (use get_or_create to handle edge cases)
+        UserProfile.objects.get_or_create(user=user)
+
         # Generate tokens
         refresh = RefreshToken.for_user(user)
-        
+
         return Response({
             'message': 'User registered successfully.',
             'user': UserSerializer(user).data,
