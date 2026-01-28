@@ -52,23 +52,24 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, tr
 };
 
 const DashboardPage: React.FC = () => {
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile, isLoading: profileLoading, isError: profileError } = useQuery({
     queryKey: ['profile'],
     queryFn: () => userAPI.getProfile(),
   });
-  
-  const { data: filings, isLoading: filingsLoading } = useQuery({
+
+  const { data: filings, isLoading: filingsLoading, isError: filingsError } = useQuery({
     queryKey: ['filings'],
     queryFn: () => gstFilingAPI.getFilings(),
   });
-  
-  const { data: invoices, isLoading: invoicesLoading } = useQuery({
+
+  const { data: invoices, isLoading: invoicesLoading, isError: invoicesError } = useQuery({
     queryKey: ['invoices'],
     queryFn: () => invoiceAPI.getInvoices(),
   });
-  
+
   const isLoading = profileLoading || filingsLoading || invoicesLoading;
-  
+  const hasError = profileError || filingsError || invoicesError;
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -76,9 +77,24 @@ const DashboardPage: React.FC = () => {
       </div>
     );
   }
+
+  if (hasError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64">
+        <p className="text-red-600 mb-4">Failed to load dashboard data</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="btn-primary"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
   
-  const userData = profile?.data;
-  const filingList = filings?.data || [];
+  // Profile API returns an array, get the first item
+  const userData = Array.isArray(profile?.data) ? profile?.data[0] : profile?.data;
+  const filingList = Array.isArray(filings?.data) ? filings.data : [];
   const invoiceList = invoices?.data?.invoices || [];
   
   // Calculate stats

@@ -204,24 +204,30 @@ class OTPViewSet(viewsets.ViewSet):
 
 class UserProfileViewSet(viewsets.ModelViewSet):
     """ViewSet for user profile management."""
-    
+
     serializer_class = UserProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
-    
+
     def get_queryset(self):
         return UserProfile.objects.filter(user=self.request.user)
-    
+
     def get_serializer_class(self):
         if self.action in ['update', 'partial_update']:
             return UserProfileUpdateSerializer
         return UserProfileSerializer
-    
+
+    def list(self, request, *args, **kwargs):
+        """Get current user's profile (returns single object, not array)."""
+        profile, created = UserProfile.objects.get_or_create(user=request.user)
+        serializer = self.get_serializer(profile)
+        return Response(serializer.data)
+
     def retrieve(self, request, *args, **kwargs):
         """Get user profile."""
         profile, created = UserProfile.objects.get_or_create(user=request.user)
         serializer = self.get_serializer(profile)
         return Response(serializer.data)
-    
+
     def update(self, request, *args, **kwargs):
         """Update user profile."""
         profile, created = UserProfile.objects.get_or_create(user=request.user)
