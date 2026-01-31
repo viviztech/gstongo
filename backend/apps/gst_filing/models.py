@@ -38,7 +38,7 @@ class GSTFiling(models.Model):
         related_name='gst_filings'
     )
     filing_type = models.CharField(max_length=10, choices=FILING_TYPES)
-    financial_year = models.CharField(max_length=4)  # e.g., '2024-25'
+    financial_year = models.CharField(max_length=9)  # e.g., '2024-25'
     month = models.IntegerField(choices=MONTH_CHOICES)
     year = models.IntegerField()
     
