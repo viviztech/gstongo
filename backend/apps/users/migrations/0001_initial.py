@@ -67,8 +67,6 @@ class Migration(migrations.Migration):
                 ('registration_type', models.CharField(blank=True, max_length=50, null=True)),
                 ('date_of_registration', models.DateField(blank=True, null=True)),
                 ('preferred_notification_channel', models.CharField(choices=[('email', 'Email'), ('sms', 'SMS'), ('whatsapp', 'WhatsApp'), ('push', 'Push Notification')], default='email', max_length=20)),
-                ('reset_token', models.CharField(blank=True, max_length=64, null=True)),
-                ('reset_token_created_at', models.DateTimeField(blank=True, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
