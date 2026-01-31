@@ -22,8 +22,6 @@ import FilingsPage from './pages/Filings/FilingsPage';
 import FilingDetailPage from './pages/Filings/FilingDetailPage';
 import InvoicesPage from './pages/Invoices/InvoicesPage';
 import ProfilePage from './pages/Profile/ProfilePage';
-import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
-
 // Phase II Pages
 import ITRFilingsPage from './pages/ITR/ITRFilingsPage';
 import TDSFilingsPage from './pages/TDS/TDSFilingsPage';
@@ -32,7 +30,6 @@ import DocumentVaultPage from './pages/Vault/DocumentVaultPage';
 
 // Phase III Pages
 import SupportPage from './pages/Support/SupportPage';
-import FranchiseManagementPage from './pages/Franchise/FranchiseManagementPage';
 import KnowledgeBasePage from './pages/Help/KnowledgeBasePage';
 
 // Phase IV Pages
@@ -134,26 +131,6 @@ const App: React.FC = () => {
 
               {/* Profile */}
               <Route path="/profile" element={<ProfilePage />} />
-
-              {/* Admin Routes */}
-              <Route
-                path="/admin"
-                element={
-                  <PrivateRoute roles={['admin']}>
-                    <AdminDashboardPage />
-                  </PrivateRoute>
-                }
-              />
-
-              {/* Franchise Management */}
-              <Route
-                path="/franchise"
-                element={
-                  <PrivateRoute roles={['admin', 'franchise_owner']}>
-                    <FranchiseManagementPage />
-                  </PrivateRoute>
-                }
-              />
             </Route>
 
             {/* 404 Route */}

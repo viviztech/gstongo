@@ -133,14 +133,7 @@ export const invoiceAPI = {
     api.post("invoices/payments/initiate/", { invoice_id: invoiceId }),
 };
 
-/* ===================== ADMIN ===================== */
 
-export const adminAPI = {
-  getDashboard: () => api.get("admin/dashboard/"),
-  getUsers: () => api.get("users/manage/"),
-  getFilings: () => api.get("gst/admin/"),
-  getPayments: () => api.get("invoices/admin/"),
-};
 
 // ---------------- USER ----------------
 export const userAPI = {
