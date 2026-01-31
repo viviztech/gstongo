@@ -18,8 +18,8 @@ if (!API_BASE_URL) {
 
 const api: AxiosInstance = axios.create({
   baseURL: API_BASE_URL.includes("/api")
-    ? `${API_BASE_URL}/v1`
-    : `${API_BASE_URL}/api/v1`,
+    ? `${API_BASE_URL}/v1/`
+    : `${API_BASE_URL}/api/v1/`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -86,33 +86,33 @@ api.interceptors.response.use(
 /* ===================== AUTH ===================== */
 
 export const authAPI = {
-  register: (data: any) => api.post("/auth/register/", data),
+  register: (data: any) => api.post("auth/register/", data),
   login: (email: string, password: string) =>
-    api.post("/auth/login/", { email, password }),
+    api.post("auth/login/", { email, password }),
   refreshToken: (refresh: string) =>
-    api.post("/auth/token/refresh/", { refresh }),
-  getProfile: () => api.get("/auth/profile/"),
+    api.post("auth/token/refresh/", { refresh }),
+  getProfile: () => api.get("auth/profile/"),
   forgotPassword: (email: string) =>
-    api.post("/auth/password/request_reset/", { email }),
+    api.post("auth/password/request_reset/", { email }),
   verifyResetToken: (token: string) =>
-    api.post("/auth/password/verify_token/", { token }),
+    api.post("auth/password/verify_token/", { token }),
   resetPassword: (token: string, newPassword: string, newPasswordConfirm: string) =>
-    api.post("/auth/password/confirm_reset/", { token, new_password: newPassword, new_password_confirm: newPasswordConfirm }),
+    api.post("auth/password/confirm_reset/", { token, new_password: newPassword, new_password_confirm: newPasswordConfirm }),
 };
 
 /* ===================== GST ===================== */
 
 export const gstFilingAPI = {
-  getFilings: (params?: any) => api.get("/gst/filings/", { params }),
-  getFiling: (id: string) => api.get(`/gst/filings/${id}/`),
-  createFiling: (data: any) => api.post("/gst/filings/", data),
-  getFilingSummary: (id: string) => api.get(`/gst/filings/${id}/summary/`),
-  declareFiling: (id: string) => api.post(`/gst/filings/${id}/declare/`),
-  markNilFiling: (id: string, data: any) => api.post(`/gst/filings/${id}/mark_nil/`, data),
+  getFilings: (params?: any) => api.get("gst/filings/", { params }),
+  getFiling: (id: string) => api.get(`gst/filings/${id}/`),
+  createFiling: (data: any) => api.post("gst/filings/", data),
+  getFilingSummary: (id: string) => api.get(`gst/filings/${id}/summary/`),
+  declareFiling: (id: string) => api.post(`gst/filings/${id}/declare/`),
+  markNilFiling: (id: string, data: any) => api.post(`gst/filings/${id}/mark_nil/`, data),
   uploadInvoices: (filingId: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);
-    return api.post(`/gst/filings/${filingId}/upload_invoices/`, formData, {
+    return api.post(`gst/filings/${filingId}/upload_invoices/`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
@@ -127,36 +127,36 @@ export const gstFilingAPI = {
 /* ===================== INVOICES ===================== */
 
 export const invoiceAPI = {
-  getInvoices: (params?: any) => api.get("/invoices/invoices/", { params }),
-  getInvoice: (id: string) => api.get(`/invoices/invoices/${id}/`),
+  getInvoices: (params?: any) => api.get("invoices/invoices/", { params }),
+  getInvoice: (id: string) => api.get(`invoices/invoices/${id}/`),
   initiatePayment: (invoiceId: string) =>
-    api.post("/invoices/payments/initiate/", { invoice_id: invoiceId }),
+    api.post("invoices/payments/initiate/", { invoice_id: invoiceId }),
 };
 
 /* ===================== ADMIN ===================== */
 
 export const adminAPI = {
-  getDashboard: () => api.get("/admin/dashboard/"),
-  getUsers: () => api.get("/users/manage/"),
-  getFilings: () => api.get("/gst/admin/"),
-  getPayments: () => api.get("/invoices/admin/"),
+  getDashboard: () => api.get("admin/dashboard/"),
+  getUsers: () => api.get("users/manage/"),
+  getFilings: () => api.get("gst/admin/"),
+  getPayments: () => api.get("invoices/admin/"),
 };
 
 // ---------------- USER ----------------
 export const userAPI = {
-  getProfile: () => api.get("/auth/profile/"),
+  getProfile: () => api.get("auth/profile/"),
 
   updateProfile: (data: any) =>
-    api.patch("/auth/profile/", data),
+    api.patch("auth/profile/", data),
 
   getNotifications: () =>
-    api.get("/notifications/list/"),
+    api.get("notifications/list/"),
 
   markNotificationRead: (id: string) =>
-    api.post(`/notifications/list/${id}/mark_as_read/`),
+    api.post(`notifications/list/${id}/mark_as_read/`),
 
   getUnreadCount: () =>
-    api.get("/notifications/list/unread_count/"),
+    api.get("notifications/list/unread_count/"),
 };
 
 
