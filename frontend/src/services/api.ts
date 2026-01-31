@@ -8,7 +8,8 @@ import { toast } from "react-hot-toast";
  * Must be defined in .env as:
  * VITE_BACKEND_URL=https://gstongo.com
  */
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+// Normalize URL: remove trailing slashes
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL?.replace(/\/+$/, "");
 
 // Hard fail if missing
 if (!API_BASE_URL) {
@@ -16,7 +17,7 @@ if (!API_BASE_URL) {
 }
 
 const api: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL.endsWith("/api")
+  baseURL: API_BASE_URL.includes("/api")
     ? `${API_BASE_URL}/v1`
     : `${API_BASE_URL}/api/v1`,
   headers: {
@@ -73,8 +74,9 @@ api.interceptors.response.use(
 
     const message =
       (error.response?.data as any)?.error?.message ||
+      (error.response?.data as any)?.detail ||
       error.message ||
-      "Something went wrong";
+      "An unexpected error occurred. Please try again later.";
 
     toast.error(message);
     return Promise.reject(error);
@@ -115,7 +117,7 @@ export const gstFilingAPI = {
     });
   },
   downloadTemplateFile: (type: string, financialYear: string) => {
-    const base = API_BASE_URL.endsWith("/api")
+    const base = API_BASE_URL.includes("/api")
       ? `${API_BASE_URL}/v1`
       : `${API_BASE_URL}/api/v1`;
     return `${base}/gst/filings/download_template/?type=${type}&financial_year=${financialYear}`;
