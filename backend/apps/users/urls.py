@@ -19,6 +19,7 @@ router.register(r'manage', UserManagementViewSet, basename='user-manage')
 router.register(r'password', PasswordResetViewSet, basename='auth-password')
 
 urlpatterns = [
+    path('profile/', UserProfileViewSet.as_view({'get': 'list', 'patch': 'update_profile', 'put': 'update_profile'}), name='profile-root'),
     path('', include(router.urls)),
     path('login/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),

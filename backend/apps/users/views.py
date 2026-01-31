@@ -229,13 +229,18 @@ class UserProfileViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(profile)
         return Response(serializer.data)
 
-    def update(self, request, *args, **kwargs):
-        """Update user profile."""
+    @action(detail=False, methods=['patch', 'put'])
+    def update_profile(self, request):
+        """Update current user's profile."""
         profile, created = UserProfile.objects.get_or_create(user=request.user)
         serializer = self.get_serializer(profile, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(UserProfileSerializer(profile).data)
+
+    def update(self, request, *args, **kwargs):
+        """Standard detail update (fallback)."""
+        return self.update_profile(request)
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
