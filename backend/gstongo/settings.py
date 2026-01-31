@@ -8,18 +8,18 @@ from datetime import timedelta
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# =========================
+# =========================================================
 # SECURITY
-# =========================
+# =========================================================
 
 SECRET_KEY = 'django-insecure-dev-key-change-in-production'
 DEBUG = True
 
 ALLOWED_HOSTS = ['gstongo.com', 'www.gstongo.com', '127.0.0.1', 'localhost', '*']
 
-# =========================
+# =========================================================
 # APPLICATIONS
-# =========================
+# =========================================================
 
 INSTALLED_APPS = [
     # Unfold (must be before admin)
@@ -51,9 +51,9 @@ INSTALLED_APPS = [
     'apps.admin_portal',
 ]
 
-# =========================
+# =========================================================
 # UNFOLD CONFIG
-# =========================
+# =========================================================
 
 UNFOLD = {
     "SITE_TITLE": "GSTONGO Admin",
@@ -63,9 +63,9 @@ UNFOLD = {
     "SHOW_VIEW_ON_SITE": True,
 }
 
-# =========================
+# =========================================================
 # MIDDLEWARE
-# =========================
+# =========================================================
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -100,9 +100,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gstongo.wsgi.application'
 
-# =========================
+# =========================================================
 # DATABASE (AWS RDS)
-# =========================
+# =========================================================
 
 DATABASES = {
     'default': {
@@ -115,9 +115,9 @@ DATABASES = {
     }
 }
 
-# =========================
+# =========================================================
 # AUTH
-# =========================
+# =========================================================
 
 AUTH_USER_MODEL = 'users.User'
 
@@ -128,30 +128,33 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# =========================
-# I18N
-# =========================
+# =========================================================
+# INTERNATIONALIZATION
+# =========================================================
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
-# =========================
-# STATIC & MEDIA
-# =========================
+# =========================================================
+# STATIC & MEDIA (CRITICAL SECTION)
+# =========================================================
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# THIS LINE FIXES YOUR ENTIRE ADMIN UI
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# =========================
+# =========================================================
 # DRF
-# =========================
+# =========================================================
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
@@ -162,9 +165,9 @@ REST_FRAMEWORK = {
     ),
 }
 
-# =========================
+# =========================================================
 # JWT
-# =========================
+# =========================================================
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
@@ -174,9 +177,9 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
 }
 
-# =========================
+# =========================================================
 # CORS / CSRF
-# =========================
+# =========================================================
 
 CORS_ALLOW_ALL_ORIGINS = True
 
@@ -191,9 +194,9 @@ CSRF_TRUSTED_ORIGINS = [
     'https://www.gstongo.com',
 ]
 
-# =========================
+# =========================================================
 # EMAIL
-# =========================
+# =========================================================
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
@@ -203,9 +206,9 @@ EMAIL_HOST_USER = 'viviztechnologies@gmail.com'
 EMAIL_HOST_PASSWORD = 'YOUR_GMAIL_APP_PASSWORD'
 DEFAULT_FROM_EMAIL = 'GSTONGO <viviztechnologies@gmail.com>'
 
-# =========================
+# =========================================================
 # LOGGING
-# =========================
+# =========================================================
 
 LOGGING = {
     'version': 1,
@@ -219,8 +222,8 @@ LOGGING = {
     },
 }
 
-# =========================
+# =========================================================
 # FRONTEND
-# =========================
+# =========================================================
 
 FRONTEND_URL = 'https://gstongo.com'
