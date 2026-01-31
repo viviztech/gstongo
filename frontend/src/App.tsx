@@ -10,17 +10,31 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import MainLayout from './components/Layout/MainLayout';
 import AuthLayout from './components/Layout/AuthLayout';
 
-// Pages
+// Auth Pages
 import LoginPage from './pages/Auth/LoginPage';
 import RegisterPage from './pages/Auth/RegisterPage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
+
+// Main Pages
 import DashboardPage from './pages/Dashboard/DashboardPage';
 import FilingsPage from './pages/Filings/FilingsPage';
 import FilingDetailPage from './pages/Filings/FilingDetailPage';
 import InvoicesPage from './pages/Invoices/InvoicesPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
-import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
-import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
+
+// Phase II Pages
+import ITRFilingsPage from './pages/ITR/ITRFilingsPage';
+import TDSFilingsPage from './pages/TDS/TDSFilingsPage';
+import BusinessServicesPage from './pages/Services/BusinessServicesPage';
+import DocumentVaultPage from './pages/Vault/DocumentVaultPage';
+
+// Phase III Pages
+import SupportPage from './pages/Support/SupportPage';
+
+// Phase IV Pages
+import AnalyticsPage from './pages/Analytics/AnalyticsPage';
 
 // Components
 import PrivateRoute from './components/Auth/PrivateRoute';
@@ -84,9 +98,36 @@ const App: React.FC = () => {
             >
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/dashboard" element={<DashboardPage />} />
+
+              {/* GST Filings */}
               <Route path="/filings" element={<FilingsPage />} />
               <Route path="/filings/:id" element={<FilingDetailPage />} />
+
+              {/* ITR Filings */}
+              <Route path="/itr" element={<ITRFilingsPage />} />
+              <Route path="/itr/:id" element={<ITRFilingsPage />} />
+
+              {/* TDS Filings */}
+              <Route path="/tds" element={<TDSFilingsPage />} />
+              <Route path="/tds/:id" element={<TDSFilingsPage />} />
+
+              {/* Business Services */}
+              <Route path="/services" element={<BusinessServicesPage />} />
+              <Route path="/services/:id" element={<BusinessServicesPage />} />
+
+              {/* Document Vault */}
+              <Route path="/vault" element={<DocumentVaultPage />} />
+
+              {/* Invoices & Payments */}
               <Route path="/invoices" element={<InvoicesPage />} />
+
+              {/* Support */}
+              <Route path="/support" element={<SupportPage />} />
+
+              {/* Analytics */}
+              <Route path="/analytics" element={<AnalyticsPage />} />
+
+              {/* Profile */}
               <Route path="/profile" element={<ProfilePage />} />
 
               {/* Admin Routes */}
