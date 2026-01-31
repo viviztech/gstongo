@@ -55,6 +55,9 @@ INSTALLED_APPS = [
     'apps.invoices',
     'apps.payments',
     'apps.itr_system',
+    'apps.tds_filing',
+    'apps.business_services',
+    'apps.document_vault',
     'apps.admin_portal',
 ]
 
