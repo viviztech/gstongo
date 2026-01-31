@@ -48,7 +48,7 @@ class GSTFilingModelTests(TestCase):
             status='draft'
         )
         
-        expected = f"GSTR-1 - filing_test@example.com - 2024-25 - 10"
+        expected = f"GSTR1 - filing_test@example.com - 2024-25 - 10"
         self.assertEqual(str(filing), expected)
     
     def test_mark_as_filed(self):
