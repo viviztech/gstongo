@@ -261,6 +261,15 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             response.data['profile'] = UserProfileSerializer(
                 profile, context={'request': request}
             ).data
+            
+            # Determine roles
+            roles = ['customer'] # Default role
+            if user.is_superuser or user.is_staff or hasattr(user, 'admin_profile'):
+                roles.append('admin')
+            if hasattr(user, 'franchise'):
+                roles.append('franchise')
+            
+            response.data['roles'] = roles
         return response
 
 

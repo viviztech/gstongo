@@ -32,6 +32,7 @@ interface NavItem {
 
 const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+  { name: 'Admin Dashboard', href: '/admin', icon: ChartBarIcon, roles: ['admin'] }, // Only visible to admins
   { name: 'GST Filings', href: '/filings', icon: DocumentTextIcon },
   { name: 'ITR Filings', href: '/itr', icon: CalculatorIcon },
   { name: 'TDS Returns', href: '/tds', icon: BanknotesIcon },
@@ -49,8 +50,15 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // In production, this would come from auth context
-  const userRole = 'admin'; // Mock user role
+  // Read roles from localStorage
+  const userRoles = React.useMemo(() => {
+    try {
+      const stored = localStorage.getItem('userRoles');
+      return stored ? JSON.parse(stored) : ['customer'];
+    } catch {
+      return ['customer'];
+    }
+  }, []);
 
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
@@ -60,6 +68,7 @@ const MainLayout: React.FC = () => {
   const handleLogout = () => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userRoles');
     navigate('/login');
   };
 
@@ -68,8 +77,11 @@ const MainLayout: React.FC = () => {
   };
 
   const filteredNavigation = navigation.filter(item => {
-    if (!item.roles) return true;
-    return item.roles.includes(userRole);
+    // If no roles defined, everyone sees it
+    if (!item.roles || item.roles.length === 0) return true;
+
+    // Check if user has ANY required role
+    return item.roles.some(role => userRoles.includes(role));
   });
 
   return (

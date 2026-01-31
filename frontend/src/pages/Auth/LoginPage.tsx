@@ -48,7 +48,7 @@ const LoginPage: React.FC = () => {
        *   refresh: "jwt-token"
        * }
        */
-      const { access, refresh } = response.data;
+      const { access, refresh, roles } = response.data;
 
       if (!access || !refresh) {
         toast.error("Invalid login response from server");
@@ -57,6 +57,12 @@ const LoginPage: React.FC = () => {
 
       localStorage.setItem("accessToken", access);
       localStorage.setItem("refreshToken", refresh);
+
+      if (roles) {
+        localStorage.setItem("userRoles", JSON.stringify(roles));
+      } else {
+        localStorage.removeItem("userRoles");
+      }
 
       toast.success("Welcome back!");
       navigate("/dashboard");
