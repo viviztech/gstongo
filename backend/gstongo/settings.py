@@ -191,16 +191,17 @@ CSRF_TRUSTED_ORIGINS = [
 
 # Email Configuration
 if DEBUG:
+    # Set to 'django.core.mail.backends.smtp.EmailBackend' if you want to test live emails locally
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
-    EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
-    EMAIL_USE_TLS = True
-    EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
-    EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
 
-DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@gstongo.com')
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'viviztechnologies@gmail.com'
+EMAIL_HOST_PASSWORD = 'nvtl lmcz fxkm zsum'
+DEFAULT_FROM_EMAIL = 'GSTONGO <viviztechnologies@gmail.com>'
 
 # SMS Configuration (Twilio)
 TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
