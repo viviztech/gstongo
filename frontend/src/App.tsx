@@ -19,6 +19,8 @@ import FilingDetailPage from './pages/Filings/FilingDetailPage';
 import InvoicesPage from './pages/Invoices/InvoicesPage';
 import ProfilePage from './pages/Profile/ProfilePage';
 import AdminDashboardPage from './pages/Admin/AdminDashboardPage';
+import ForgotPasswordPage from './pages/Auth/ForgotPasswordPage';
+import ResetPasswordPage from './pages/Auth/ResetPasswordPage';
 
 // Components
 import PrivateRoute from './components/Auth/PrivateRoute';
@@ -61,15 +63,17 @@ const App: React.FC = () => {
             },
           }}
         />
-        
+
         <React.Suspense fallback={<LoadingSpinner />}>
           <Routes>
             {/* Auth Routes */}
             <Route element={<AuthLayout />}>
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
             </Route>
-            
+
             {/* Protected Routes */}
             <Route
               element={
@@ -84,7 +88,7 @@ const App: React.FC = () => {
               <Route path="/filings/:id" element={<FilingDetailPage />} />
               <Route path="/invoices" element={<InvoicesPage />} />
               <Route path="/profile" element={<ProfilePage />} />
-              
+
               {/* Admin Routes */}
               <Route
                 path="/admin"
@@ -95,7 +99,7 @@ const App: React.FC = () => {
                 }
               />
             </Route>
-            
+
             {/* 404 Route */}
             <Route path="*" element={<Navigate to="/dashboard" replace />} />
           </Routes>
