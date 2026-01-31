@@ -58,6 +58,8 @@ INSTALLED_APPS = [
     'apps.tds_filing',
     'apps.business_services',
     'apps.document_vault',
+    'apps.franchise',
+    'apps.support',
     'apps.admin_portal',
 ]
 
