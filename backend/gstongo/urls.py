@@ -17,6 +17,7 @@ urlpatterns = [
     path('api/v1/vault/', include('apps.document_vault.urls')),
     path('api/v1/franchise/', include('apps.franchise.urls')),
     path('api/v1/support/', include('apps.support.urls')),
+    path('api/v1/analytics/', include('apps.analytics.urls')),
     path('api/v1/notifications/', include('apps.notifications.urls')),
     path('api/v1/invoices/', include('apps.invoices.urls')),
     path('api/v1/payments/', include('apps.payments.urls')),

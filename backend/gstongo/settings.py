@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.document_vault',
     'apps.franchise',
     'apps.support',
+    'apps.analytics',
     'apps.admin_portal',
 ]
 
