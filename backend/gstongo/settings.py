@@ -17,6 +17,9 @@ ALLOWED_HOSTS = ['gstongo.com', 'www.gstongo.com', '127.0.0.1', 'localhost', '*'
 
 # Applications
 INSTALLED_APPS = [
+    'unfold',  # must be before django.contrib.admin
+    'unfold.contrib.filters',
+    'unfold.contrib.forms',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -39,6 +42,28 @@ INSTALLED_APPS = [
     'apps.payments',
     'apps.admin_portal',
 ]
+
+UNFOLD = {
+    "SITE_TITLE": "GSTONGO Admin",
+    "SITE_SYMBOL": "speed", # font awesome symbol
+    "SHOW_HISTORY": True,
+    "SHOW_VIEW_ON_SITE": True,
+    "COLORS": {
+        "primary": {
+            "50": "244 247 254",
+            "100": "231 237 252",
+            "200": "205 219 249",
+            "300": "170 192 244",
+            "400": "128 156 238",
+            "500": "99 123 232",
+            "600": "79 96 219",
+            "700": "67 79 203",
+            "800": "58 66 166",
+            "900": "51 58 133",
+            "950": "33 36 78",
+        },
+    },
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
