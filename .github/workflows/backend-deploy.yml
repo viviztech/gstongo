@@ -42,6 +42,5 @@ jobs:
           docker run -d \
             --name gstongo \
             -p 8000:8000 \
-            -v ~/gstongo-db.sqlite3:/app/db.sqlite3 \
             -v ~/gstongo-logs:/app/logs \
             sribalajidevops/gstongo-backend:latest

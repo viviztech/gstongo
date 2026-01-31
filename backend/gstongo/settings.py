@@ -5,22 +5,17 @@ Django settings for GSTONGO project.
 import os
 from pathlib import Path
 from datetime import timedelta
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-dev-key-change-in-production')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
+# SECURITY
+SECRET_KEY = 'django-insecure-dev-key-change-in-production'
+DEBUG = True
 
 ALLOWED_HOSTS = ['gstongo.com', 'www.gstongo.com', '127.0.0.1', 'localhost', '*']
 
-# Application definition
+# Applications
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -28,15 +23,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
-    # Third party apps
+
+    # Third party
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
     'django_otp',
-    # 'django_celery_beat',
-    # 'django_celery_results',
-    
+
     # Local apps
     'apps.users',
     'apps.core',
@@ -80,65 +73,59 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'gstongo.wsgi.application'
 
-# Database - Using DATABASE_URL from environment or SQLite for development
-import dj_database_url
-db_from_env = os.environ.get('DATABASE_URL', '')
-if db_from_env:
-    DATABASES = {
-        'default': dj_database_url.parse(db_from_env)
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
+# =========================================================
+# DATABASE (HARDCODED AWS RDS)
+# =========================================================
 
-# Cache - Using local memory cache for development
-CACHES = {
+DATABASES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'gstongo',
+        'USER': 'gstongo',
+        'PASSWORD': 'gstongoadmin',
+        'HOST': 'gstongo-db.c5igmwgccjat.eu-north-1.rds.amazonaws.com',
+        'PORT': '5432',
     }
 }
 
-# Password validation
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
+# =========================================================
+# AUTH
+# =========================================================
 
-# Custom User Model
 AUTH_USER_MODEL = 'users.User'
 
-# Internationalization
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+]
+
+# =========================================================
+# INTERNATIONALIZATION
+# =========================================================
+
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Asia/Kolkata'
 USE_I18N = True
 USE_TZ = True
 
-# Static files
+# =========================================================
+# STATIC & MEDIA
+# =========================================================
+
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-# Media files
-MEDIA_URL = 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# REST Framework Configuration
+# =========================================================
+# DRF
+# =========================================================
+
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -146,133 +133,67 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
-    'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',
-    ),
-    'DEFAULT_PARSER_CLASSES': (
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.MultiPartParser',
-        'rest_framework.parsers.FormParser',
-    ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
-
 }
 
-# JWT Configuration
+# =========================================================
+# JWT
+# =========================================================
+
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
-    'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
 }
 
-# CORS Settings
-CORS_ALLOW_ALL_ORIGINS = DEBUG
+# =========================================================
+# CORS / CSRF
+# =========================================================
+
+CORS_ALLOW_ALL_ORIGINS = True
+
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:3000',
-    'http://localhost:8080',
     'https://gstongo.com',
     'https://www.gstongo.com',
 ]
 
-# CSRF Settings
 CSRF_TRUSTED_ORIGINS = [
     'https://gstongo.com',
     'https://www.gstongo.com',
 ]
 
-# Email Configuration
-if DEBUG:
-    # Set to 'django.core.mail.backends.smtp.EmailBackend' if you want to test live emails locally
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-else:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# =========================================================
+# EMAIL
+# =========================================================
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'viviztechnologies@gmail.com'
-EMAIL_HOST_PASSWORD = 'nvtl lmcz fxkm zsum'
+EMAIL_HOST_PASSWORD = 'YOUR_GMAIL_APP_PASSWORD'
 DEFAULT_FROM_EMAIL = 'GSTONGO <viviztechnologies@gmail.com>'
 
-# SMS Configuration (Twilio)
-TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
-TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
-TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
+# =========================================================
+# LOGGING
+# =========================================================
 
-# Firebase Configuration
-FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID', '')
-FIREBASE_API_KEY = os.environ.get('FIREBASE_API_KEY', '')
-
-# WhatsApp Configuration (WhatsApp Business API)
-WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '')
-WHATSAPP_ACCESS_TOKEN = os.environ.get('WHATSAPP_ACCESS_TOKEN', '')
-
-# Payment Gateway Configuration (Razorpay)
-RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID', '')
-RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET', '')
-
-# Celery Configuration
-CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://127.0.0.1:6379/0')
-CELERY_RESULT_BACKEND = 'django-db'
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Kolkata'
-
-# Logging Configuration - use console only in production (no file handler)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
-        },
+        'console': {'class': 'logging.StreamHandler'},
     },
     'root': {
         'handlers': ['console'],
         'level': 'INFO',
     },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'apps': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
 }
 
-# File Upload Settings
-DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760  # 10MB
-FILE_UPLOAD_MAX_MEMORY_SIZE = 5242880   # 5MB
+# =========================================================
+# FRONTEND
+# =========================================================
 
-# Rate Limiting
-RATELIMIT_ENABLE = True
-
-# Frontend URL
-FRONTEND_URL = os.environ.get('FRONTEND_URL', 'https://gstongo.com')
+FRONTEND_URL = 'https://gstongo.com'
