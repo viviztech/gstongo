@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     'apps.notifications',
     'apps.invoices',
     'apps.payments',
+    'apps.itr_system',
     'apps.admin_portal',
 ]
 

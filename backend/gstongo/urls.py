@@ -11,6 +11,7 @@ urlpatterns = [
     path('api/v1/auth/', include('apps.users.urls')),
     path('api/v1/core/', include('apps.core.urls')),
     path('api/v1/gst/', include('apps.gst_filing.urls')),
+    path('api/v1/itr/', include('apps.itr_system.urls')),
     path('api/v1/notifications/', include('apps.notifications.urls')),
     path('api/v1/invoices/', include('apps.invoices.urls')),
     path('api/v1/payments/', include('apps.payments.urls')),
