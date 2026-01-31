@@ -39,9 +39,34 @@ const FilingsPage: React.FC = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
   const [filter, setFilter] = useState({ filing_type: '', status: '' });
+  const getCurrentFinancialYear = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // 0-indexed
+
+    if (month >= 4) {
+      return `${year}-${(year + 1).toString().slice(-2)}`;
+    } else {
+      return `${year - 1}-${year.toString().slice(-2)}`;
+    }
+  };
+
+  const getFinancialYearOptions = () => {
+    const currentFY = getCurrentFinancialYear();
+    const [startYear] = currentFY.split('-');
+    const prevYear = parseInt(startYear) - 1;
+    const nextYear = parseInt(startYear) + 1;
+
+    return [
+      { value: `${prevYear}-${startYear.slice(-2)}`, label: `${prevYear}-${startYear.slice(-2)}` },
+      { value: currentFY, label: currentFY },
+      { value: `${nextYear}-${(nextYear + 1).toString().slice(-2)}`, label: `${nextYear}-${(nextYear + 1).toString().slice(-2)}` },
+    ];
+  };
+
   const [newFiling, setNewFiling] = useState({
     filing_type: 'GSTR1',
-    financial_year: '2024-25',
+    financial_year: getCurrentFinancialYear(),
     month: new Date().getMonth() + 1,
     year: new Date().getFullYear(),
     nil_filing: false,
@@ -246,8 +271,9 @@ const FilingsPage: React.FC = () => {
                   onChange={(e) => setNewFiling({ ...newFiling, financial_year: e.target.value })}
                   className="input-field"
                 >
-                  <option value="2024-25">2024-25</option>
-                  <option value="2025-26">2025-26</option>
+                  {getFinancialYearOptions().map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
                 </select>
               </div>
 

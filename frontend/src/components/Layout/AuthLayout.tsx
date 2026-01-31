@@ -16,7 +16,7 @@ const AuthLayout: React.FC = () => {
           <Outlet />
         </div>
         <p className="text-center text-primary-200 text-sm mt-6">
-          © 2025 GSTONGO. All rights reserved.
+          © {new Date().getFullYear()} GSTONGO. All rights reserved.
         </p>
       </div>
     </div>
