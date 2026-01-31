@@ -74,13 +74,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating user profile."""
     
+    first_name = serializers.CharField(source='user.first_name', required=False)
+    last_name = serializers.CharField(source='user.last_name', required=False)
+    phone_number = serializers.CharField(source='user.phone_number', required=False)
+    
     class Meta:
         model = UserProfile
         fields = [
             'gst_number', 'legal_name', 'trade_name',
             'address_line_1', 'address_line_2', 'pincode', 'city', 'state',
             'business_type', 'registration_type', 'date_of_registration',
-            'preferred_notification_channel'
+            'preferred_notification_channel', 'first_name', 'last_name', 'phone_number'
         ]
     
     def validate_gst_number(self, value):
@@ -94,6 +98,18 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         if value and (len(value) != 6 or not value.isdigit()):
             raise serializers.ValidationError('Pincode must be 6 digits.')
         return value
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        user = instance.user
+        
+        # Update user fields
+        for attr, value in user_data.items():
+            setattr(user, attr, value)
+        user.save()
+        
+        # Update profile fields
+        return super().update(instance, validated_data)
 
 
 class OTPVerificationSerializer(serializers.Serializer):

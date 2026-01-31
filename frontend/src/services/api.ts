@@ -15,13 +15,10 @@ if (!API_BASE_URL) {
   throw new Error("❌ VITE_BACKEND_URL is missing in .env");
 }
 
-/**
- * Axios instance
- * Backend root = http://51.21.196.208:8000
- * All API routes start with /api/v1
- */
 const api: AxiosInstance = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: API_BASE_URL.endsWith("/api")
+    ? `${API_BASE_URL}/v1`
+    : `${API_BASE_URL}/api/v1`,
   headers: {
     "Content-Type": "application/json",
   },
@@ -55,10 +52,11 @@ api.interceptors.response.use(
         const refreshToken = localStorage.getItem("refreshToken");
         if (!refreshToken) throw new Error("No refresh token");
 
-        const response = await axios.post(
-          `${API_BASE_URL}/api/v1/auth/token/refresh/`,
-          { refresh: refreshToken }
-        );
+        const refreshURL = API_BASE_URL.endsWith("/api")
+          ? `${API_BASE_URL}/v1/auth/token/refresh/`
+          : `${API_BASE_URL}/api/v1/auth/token/refresh/`;
+
+        const response = await axios.post(refreshURL, { refresh: refreshToken });
 
         const { access } = response.data;
         localStorage.setItem("accessToken", access);
@@ -116,26 +114,30 @@ export const gstFilingAPI = {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
   },
-  downloadTemplateFile: (type: string, financialYear: string) =>
-    `${API_BASE_URL}/api/v1/gst/filings/download_template/?type=${type}&financial_year=${financialYear}`,
+  downloadTemplateFile: (type: string, financialYear: string) => {
+    const base = API_BASE_URL.endsWith("/api")
+      ? `${API_BASE_URL}/v1`
+      : `${API_BASE_URL}/api/v1`;
+    return `${base}/gst/filings/download_template/?type=${type}&financial_year=${financialYear}`;
+  },
 };
 
 /* ===================== INVOICES ===================== */
 
 export const invoiceAPI = {
-  getInvoices: (params?: any) => api.get("/invoices/", { params }),
-  getInvoice: (id: string) => api.get(`/invoices/${id}/`),
+  getInvoices: (params?: any) => api.get("/invoices/invoices/", { params }),
+  getInvoice: (id: string) => api.get(`/invoices/invoices/${id}/`),
   initiatePayment: (invoiceId: string) =>
-    api.post("/payments/initiate/", { invoice_id: invoiceId }),
+    api.post("/invoices/payments/initiate/", { invoice_id: invoiceId }),
 };
 
 /* ===================== ADMIN ===================== */
 
 export const adminAPI = {
   getDashboard: () => api.get("/admin/dashboard/"),
-  getUsers: () => api.get("/admin/users/"),
-  getFilings: () => api.get("/admin/filings/"),
-  getPayments: () => api.get("/admin/payments/"),
+  getUsers: () => api.get("/users/manage/"),
+  getFilings: () => api.get("/gst/admin/"),
+  getPayments: () => api.get("/invoices/admin/"),
 };
 
 // ---------------- USER ----------------
@@ -146,13 +148,13 @@ export const userAPI = {
     api.patch("/auth/profile/", data),
 
   getNotifications: () =>
-    api.get("/notifications/"),
+    api.get("/notifications/list/"),
 
   markNotificationRead: (id: string) =>
-    api.post(`/notifications/${id}/mark_as_read/`),
+    api.post(`/notifications/list/${id}/mark_as_read/`),
 
   getUnreadCount: () =>
-    api.get("/notifications/unread_count/"),
+    api.get("/notifications/list/unread_count/"),
 };
 
 

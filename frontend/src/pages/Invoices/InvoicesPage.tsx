@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  CurrencyRupeeIcon, 
+import {
+  CurrencyRupeeIcon,
   DocumentTextIcon,
   ClockIcon,
   CheckCircleIcon
@@ -17,11 +17,14 @@ const InvoicesPage: React.FC = () => {
     queryKey: ['invoices'],
     queryFn: () => invoiceAPI.getInvoices(),
   });
-  
-  const invoiceList = invoices?.data?.invoices || [];
-  const pendingAmount = invoices?.data?.pending_amount || 0;
-  const hasPending = invoices?.data?.has_pending_payments || false;
-  
+
+  const data = invoices?.data;
+  const invoiceList = Array.isArray(data?.invoices)
+    ? data.invoices
+    : (Array.isArray(data?.results) ? data.results : []);
+  const pendingAmount = data?.pending_amount || 0;
+  const hasPending = data?.has_pending_payments || false;
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'paid': return <CheckCircleIcon className="w-5 h-5 text-green-600" />;
@@ -30,7 +33,7 @@ const InvoicesPage: React.FC = () => {
       default: return <DocumentTextIcon className="w-5 h-5 text-gray-600" />;
     }
   };
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'paid': return 'bg-green-100 text-green-700';
@@ -39,7 +42,7 @@ const InvoicesPage: React.FC = () => {
       default: return 'bg-gray-100 text-gray-700';
     }
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -47,7 +50,7 @@ const InvoicesPage: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -57,7 +60,7 @@ const InvoicesPage: React.FC = () => {
           <p className="text-gray-600 mt-1">Manage your invoices and payments</p>
         </div>
       </div>
-      
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="card">
@@ -96,11 +99,11 @@ const InvoicesPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Invoices List */}
       <div className="card">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">All Invoices</h2>
-        
+
         {invoiceList.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full">

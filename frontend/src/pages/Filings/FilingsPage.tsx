@@ -4,8 +4,8 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { 
-  DocumentTextIcon, 
+import {
+  DocumentTextIcon,
   PlusIcon,
   FunnelIcon,
   MagnifyingGlassIcon
@@ -46,12 +46,12 @@ const FilingsPage: React.FC = () => {
     year: new Date().getFullYear(),
     nil_filing: false,
   });
-  
+
   const { data: filings, isLoading, refetch } = useQuery({
     queryKey: ['filings', filter],
     queryFn: () => gstFilingAPI.getFilings(filter),
   });
-  
+
   const createFilingMutation = useMutation({
     mutationFn: (data: any) => gstFilingAPI.createFiling(data),
     onSuccess: (response) => {
@@ -63,11 +63,11 @@ const FilingsPage: React.FC = () => {
       toast.error(error.response?.data?.error?.message || 'Failed to create filing');
     },
   });
-  
+
   const handleCreateFiling = () => {
     createFilingMutation.mutate(newFiling);
   };
-  
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'filed': return 'bg-green-100 text-green-700';
@@ -76,7 +76,7 @@ const FilingsPage: React.FC = () => {
       default: return 'bg-gray-100 text-gray-700';
     }
   };
-  
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -84,7 +84,7 @@ const FilingsPage: React.FC = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -101,7 +101,7 @@ const FilingsPage: React.FC = () => {
           New Filing
         </button>
       </div>
-      
+
       {/* Filters */}
       <div className="card">
         <div className="flex flex-wrap gap-4">
@@ -138,83 +138,89 @@ const FilingsPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Filings List */}
       <div className="card">
-        {filings?.data?.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Type</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Period</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Nil Filing</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Date</th>
-                  <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {(filings?.data || []).map((filing: any) => (
-                  <tr key={filing.id} className="border-b hover:bg-gray-50">
-                    <td className="py-3 px-4">
-                      <div className="flex items-center">
-                        <DocumentTextIcon className="w-5 h-5 text-primary-600 mr-2" />
-                        <span className="font-medium">{filing.filing_type}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-4">
-                      {MONTHS.find(m => m.value === filing.month)?.label} {filing.year}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(filing.status)}`}>
-                        {filing.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      {filing.nil_filing ? (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Nil</span>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </td>
-                    <td className="py-3 px-4 text-sm text-gray-600">
-                      {new Date(filing.created_at).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <Link
-                        to={`/filings/${filing.id}`}
-                        className="text-primary-600 hover:text-primary-700 text-sm font-medium"
-                      >
-                        View
-                      </Link>
-                    </td>
+        {(() => {
+          const filingsList = Array.isArray(filings?.data)
+            ? filings.data
+            : (Array.isArray(filings?.data?.results) ? filings.data.results : []);
+
+          return filingsList.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Type</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Period</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Nil Filing</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Date</th>
+                    <th className="text-right py-3 px-4 text-sm font-medium text-gray-600">Action</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            <DocumentTextIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-1">No Filings Found</h3>
-            <p className="text-gray-500 mb-4">Get started by creating your first GST filing</p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="btn-primary"
-            >
-              Create Filing
-            </button>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {filingsList.map((filing: any) => (
+                    <tr key={filing.id} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center">
+                          <DocumentTextIcon className="w-5 h-5 text-primary-600 mr-2" />
+                          <span className="font-medium">{filing.filing_type}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        {MONTHS.find(m => m.value === filing.month)?.label} {filing.year}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(filing.status)}`}>
+                          {filing.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {filing.nil_filing ? (
+                          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">Nil</span>
+                        ) : (
+                          <span className="text-gray-400">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-gray-600">
+                        {new Date(filing.created_at).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <Link
+                          to={`/filings/${filing.id}`}
+                          className="text-primary-600 hover:text-primary-700 text-sm font-medium"
+                        >
+                          View
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <DocumentTextIcon className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No Filings Found</h3>
+              <p className="text-gray-500 mb-4">Get started by creating your first GST filing</p>
+              <button
+                onClick={() => setShowModal(true)}
+                className="btn-primary"
+              >
+                Create Filing
+              </button>
+            </div>
+          );
+        })()}
       </div>
-      
+
       {/* Create Filing Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Create New Filing</h2>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -230,7 +236,7 @@ const FilingsPage: React.FC = () => {
                   ))}
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Financial Year
@@ -244,7 +250,7 @@ const FilingsPage: React.FC = () => {
                   <option value="2025-26">2025-26</option>
                 </select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Month
@@ -259,7 +265,7 @@ const FilingsPage: React.FC = () => {
                   ))}
                 </select>
               </div>
-              
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -273,7 +279,7 @@ const FilingsPage: React.FC = () => {
                 </label>
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-3 mt-6">
               <button
                 onClick={() => setShowModal(false)}

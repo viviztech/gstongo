@@ -29,7 +29,7 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, icon: Icon, color, tr
     yellow: 'bg-yellow-50 text-yellow-600',
     red: 'bg-red-50 text-red-600',
   };
-  
+
   return (
     <div className="card">
       <div className="flex items-center justify-between">
@@ -91,23 +91,31 @@ const DashboardPage: React.FC = () => {
       </div>
     );
   }
-  
-  // Profile API returns an array, get the first item
-  const userData = Array.isArray(profile?.data) ? profile?.data[0] : profile?.data;
-  const filingList = Array.isArray(filings?.data) ? filings.data : [];
-  const invoiceList = invoices?.data?.invoices || [];
-  
-  // Calculate stats
+
+  // Profile API returns common profile data
+  const userData = profile?.data;
+
+  // Filings API might be paginated or return direct array
+  const filingList = Array.isArray(filings?.data)
+    ? filings.data
+    : (Array.isArray(filings?.data?.results) ? filings.data.results : []);
+
+  // Invoices API might be paginated or return nested invoices array
+  const invoiceList = Array.isArray(invoices?.data?.invoices)
+    ? invoices.data.invoices
+    : (Array.isArray(invoices?.data?.results) ? invoices.data.results : []);
+
+  // Calculate stats - safegaurd against non-array data
   const totalFilings = filingList.length;
-  const pendingFilings = filingList.filter((f: any) => f.status === 'pending').length;
-  const filedFilings = filingList.filter((f: any) => f.status === 'filed').length;
+  const pendingFilings = filingList.filter((f: any) => f?.status === 'pending').length;
+  const filedFilings = filingList.filter((f: any) => f?.status === 'filed').length;
   const pendingAmount = invoiceList
-    .filter((i: any) => i.status !== 'paid')
-    .reduce((sum: number, i: any) => sum + parseFloat(i.total_amount || 0), 0);
-  
+    .filter((i: any) => i?.status !== 'paid')
+    .reduce((sum: number, i: any) => sum + parseFloat(i?.total_amount || 0), 0);
+
   // Recent filings
   const recentFilings = filingList.slice(0, 5);
-  
+
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -124,7 +132,7 @@ const DashboardPage: React.FC = () => {
           New Filing
         </Link>
       </div>
-      
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
@@ -152,7 +160,7 @@ const DashboardPage: React.FC = () => {
           color="red"
         />
       </div>
-      
+
       {/* Recent Activity & Quick Actions */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recent Filings */}
@@ -163,7 +171,7 @@ const DashboardPage: React.FC = () => {
               View All
             </Link>
           </div>
-          
+
           {recentFilings.length > 0 ? (
             <div className="space-y-3">
               {recentFilings.map((filing: any) => (
@@ -173,11 +181,10 @@ const DashboardPage: React.FC = () => {
                   className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center space-x-3">
-                    <div className={`p-2 rounded-lg ${
-                      filing.status === 'filed' ? 'bg-green-100 text-green-600' :
-                      filing.status === 'pending' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-gray-100 text-gray-600'
-                    }`}>
+                    <div className={`p-2 rounded-lg ${filing.status === 'filed' ? 'bg-green-100 text-green-600' :
+                        filing.status === 'pending' ? 'bg-yellow-100 text-yellow-600' :
+                          'bg-gray-100 text-gray-600'
+                      }`}>
                       <DocumentTextIcon className="w-5 h-5" />
                     </div>
                     <div>
@@ -187,11 +194,10 @@ const DashboardPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                    filing.status === 'filed' ? 'bg-green-100 text-green-700' :
-                    filing.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
+                  <span className={`px-2 py-1 text-xs font-medium rounded-full ${filing.status === 'filed' ? 'bg-green-100 text-green-700' :
+                      filing.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-700'
+                    }`}>
                     {filing.status}
                   </span>
                 </Link>
@@ -207,7 +213,7 @@ const DashboardPage: React.FC = () => {
             </div>
           )}
         </div>
-        
+
         {/* Quick Actions */}
         <div className="card">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
@@ -247,7 +253,7 @@ const DashboardPage: React.FC = () => {
           </div>
         </div>
       </div>
-      
+
       {/* Upcoming Deadlines */}
       <div className="card">
         <h2 className="text-lg font-semibold text-gray-900 mb-4">Upcoming Deadlines</h2>
