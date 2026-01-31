@@ -1,306 +1,437 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../services/api_service.dart';
-import '../services/auth_service.dart';
 
-class DashboardScreen extends ConsumerWidget {
+/// Dashboard Screen with navigation to all services
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final authService = AuthService();
-    final apiService = ApiService();
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
 
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _currentIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: const Text('GSTONGO'),
+        elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications),
+            icon: const Icon(Icons.notifications_outlined),
             onPressed: () {},
           ),
           IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => context.go('/profile'),
+            icon: const Icon(Icons.person_outline),
+            onPressed: () => context.push('/profile'),
           ),
         ],
       ),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _fetchDashboardData(apiService),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            final data = snapshot.data!;
-            final user = data['user'] as Map<String, dynamic>?;
-            final filings = data['filings'] as List<dynamic>;
-            final pendingAmount = data['pendingAmount'] as double;
-
-            final pendingFilings = filings.where((f) => f['status'] == 'pending').length;
-            final filedFilings = filings.where((f) => f['status'] == 'filed').length;
-
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Welcome Section
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Theme.of(context).primaryColor,
+                    Theme.of(context).primaryColor.withOpacity(0.8),
+                  ],
+                ),
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Welcome to GSTONGO',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  const Text(
+                    'Welcome Back!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  const SizedBox(height: 24),
-                  _buildQuickActions(context),
-                  const SizedBox(height: 24),
-                  _buildFilingStatus(context, pendingFilings, filedFilings),
-                  const SizedBox(height: 24),
-                  _buildRecentActivity(context, filings),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Manage your tax filings effortlessly',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Quick Stats
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildQuickStat('Pending', '3', Colors.orange),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildQuickStat('Filed', '12', Colors.green),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildQuickStat('Due Soon', '2', Colors.red),
+                      ),
+                    ],
+                  ),
                 ],
               ),
-            );
+            ),
+
+            const SizedBox(height: 20),
+
+            // Services Grid
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Services',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 12,
+                    children: [
+                      _buildServiceItem(
+                        'GST Filing',
+                        Icons.description,
+                        Colors.blue,
+                        () => context.push('/filings'),
+                      ),
+                      _buildServiceItem(
+                        'ITR Filing',
+                        Icons.calculate,
+                        Colors.green,
+                        () => context.push('/itr'),
+                      ),
+                      _buildServiceItem(
+                        'TDS Returns',
+                        Icons.account_balance,
+                        Colors.purple,
+                        () => context.push('/tds'),
+                      ),
+                      _buildServiceItem(
+                        'Business',
+                        Icons.business,
+                        Colors.orange,
+                        () => context.push('/services'),
+                      ),
+                      _buildServiceItem(
+                        'Vault',
+                        Icons.folder,
+                        Colors.teal,
+                        () => context.push('/vault'),
+                      ),
+                      _buildServiceItem(
+                        'Invoices',
+                        Icons.receipt,
+                        Colors.indigo,
+                        () => context.push('/invoices'),
+                      ),
+                      _buildServiceItem(
+                        'Support',
+                        Icons.support_agent,
+                        Colors.pink,
+                        () => context.push('/support'),
+                      ),
+                      _buildServiceItem(
+                        'Analytics',
+                        Icons.analytics,
+                        Colors.cyan,
+                        () => context.push('/analytics'),
+                      ),
+                      _buildServiceItem(
+                        'Profile',
+                        Icons.person,
+                        Colors.grey,
+                        () => context.push('/profile'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Upcoming Deadlines
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Upcoming Deadlines',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: () {},
+                        child: const Text('View All'),
+                      ),
+                    ],
+                  ),
+                  _buildDeadlineCard(
+                    'GSTR-1',
+                    'January 2025',
+                    'Feb 11, 2025',
+                    Colors.red,
+                    '3 days left',
+                  ),
+                  _buildDeadlineCard(
+                    'GSTR-3B',
+                    'January 2025',
+                    'Feb 20, 2025',
+                    Colors.orange,
+                    '12 days left',
+                  ),
+                  _buildDeadlineCard(
+                    'TDS Return',
+                    'Q3 2024-25',
+                    'Feb 15, 2025',
+                    Colors.blue,
+                    '7 days left',
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Recent Activity
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Recent Activity',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _buildActivityItem(
+                    'GSTR-1 Filed',
+                    'December 2024 filed successfully',
+                    '2 hours ago',
+                    Icons.check_circle,
+                    Colors.green,
+                  ),
+                  _buildActivityItem(
+                    'Payment Received',
+                    'Invoice #INV-001 - ₹5,000',
+                    '1 day ago',
+                    Icons.payment,
+                    Colors.blue,
+                  ),
+                  _buildActivityItem(
+                    'Document Uploaded',
+                    'Form 16 for AY 2024-25',
+                    '2 days ago',
+                    Icons.upload_file,
+                    Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 100),
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() => _currentIndex = index);
+          switch (index) {
+            case 0:
+              break;
+            case 1:
+              context.push('/filings');
+              break;
+            case 2:
+              context.push('/invoices');
+              break;
+            case 3:
+              context.push('/analytics');
+              break;
+            case 4:
+              context.push('/profile');
+              break;
           }
         },
-      ),
-      drawer: _buildDrawer(context, authService),
-    );
-  }
-
-  Future<Map<String, dynamic>> _fetchDashboardData(ApiService apiService) async {
-    try {
-      final userResponse = await apiService.get('/auth/me/');
-      final filingsResponse = await apiService.get('/gst/filings/');
-      final invoicesResponse = await apiService.get('/invoices/');
-
-      final filings = filingsResponse['results'] as List<dynamic>;
-      final invoices = invoicesResponse['results'] as List<dynamic>;
-      final pendingAmount = invoices
-          .where((i) => i['status'] != 'paid')
-          .fold(0.0, (sum, i) => sum + double.parse(i['total_amount'].toString()));
-
-      return {
-        'user': userResponse,
-        'filings': filings,
-        'pendingAmount': pendingAmount,
-      };
-    } catch (e) {
-      // Return mock data if API fails
-      return {
-        'user': {'first_name': 'User'},
-        'filings': [
-          {'id': 1, 'type': 'GSTR-1', 'period': 'Dec 2024', 'status': 'pending'},
-          {'id': 2, 'type': 'GSTR-3B', 'period': 'Dec 2024', 'status': 'pending'},
-          {'id': 3, 'type': 'GSTR-1', 'period': 'Nov 2024', 'status': 'filed'},
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.description_outlined),
+            activeIcon: Icon(Icons.description),
+            label: 'Filings',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_outlined),
+            activeIcon: Icon(Icons.receipt),
+            label: 'Invoices',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.analytics_outlined),
+            activeIcon: Icon(Icons.analytics),
+            label: 'Analytics',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline),
+            activeIcon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
-        'pendingAmount': 150.0,
-      };
-    }
-  }
-
-  Widget _buildQuickActions(BuildContext context) {
-    final actions = [
-      {'icon': Icons.upload_file, 'label': 'Upload GST Data', 'color': Colors.blue, 'route': '/filings'},
-      {'icon': Icons.receipt, 'label': 'View Invoices', 'color': Colors.green, 'route': '/invoices'},
-      {'icon': Icons.payment, 'label': 'Pay Now', 'color': Colors.orange, 'route': '/invoices'},
-      {'icon': Icons.description, 'label': 'My Filings', 'color': Colors.purple, 'route': '/filings'},
-    ];
-
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 1.2,
-      ),
-      itemCount: actions.length,
-      itemBuilder: (context, index) {
-        final action = actions[index];
-        return Card(
-          child: InkWell(
-            onTap: () => context.go(action['route'] as String),
-            borderRadius: BorderRadius.circular(12),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  action['icon'] as IconData,
-                  size: 40,
-                  color: action['color'] as Color,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  action['label'] as String,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w500,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFilingStatus(BuildContext context, int pending, int filed) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Filing Status',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildStatusTile(context, 'GSTR-1', 'Due: 11th Jan', Icons.pending, Colors.orange),
-            _buildStatusTile(context, 'GSTR-3B', 'Due: 20th Jan', Icons.pending, Colors.orange),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildStatItem(context, 'Pending', pending.toString(), Colors.orange),
-                _buildStatItem(context, 'Filed', filed.toString(), Colors.green),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildStatusTile(BuildContext context, String title, String subtitle, IconData icon, Color color) {
-    return ListTile(
-      leading: Icon(icon, color: color),
-      title: Text(title),
-      subtitle: Text(subtitle),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: () {},
-    );
-  }
-
-  Widget _buildStatItem(BuildContext context, String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-            color: color,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(label, style: Theme.of(context).textTheme.bodyMedium),
-      ],
-    );
-  }
-
-  Widget _buildRecentActivity(BuildContext context, List<dynamic> filings) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Recent Activity',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            if (filings.isNotEmpty)
-              ...filings.take(3).map((filing) => _buildActivityTile(
-                context,
-                '${filing['type']} - ${filing['period']}',
-                filing['status'] as String,
-              ))
-            else
-              _buildActivityTile(context, 'No filings yet', 'info'),
-          ],
-        ),
+  Widget _buildQuickStat(String label, String value, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(12),
       ),
-    );
-  }
-
-  Widget _buildActivityTile(BuildContext context, String title, String status) {
-    final isFiled = status == 'filed';
-    return ListTile(
-      leading: CircleAvatar(
-        radius: 16,
-        backgroundColor: isFiled ? Colors.green : Colors.orange,
-        child: Icon(
-          isFiled ? Icons.check : Icons.pending,
-          size: 16,
-          color: Colors.white,
-        ),
-      ),
-      title: Text(title),
-      subtitle: Text(status),
-      contentPadding: EdgeInsets.zero,
-    );
-  }
-
-  Drawer _buildDrawer(BuildContext context, AuthService authService) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
+      child: Column(
         children: [
-          const UserAccountsDrawerHeader(
-            decoration: BoxDecoration(
-              color: Color(0xFF2563EB),
-            ),
-            accountName: Text('John Doe'),
-            accountEmail: Text('john@example.com'),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.white,
-              child: Text(
-                'JD',
-                style: TextStyle(
-                  color: Color(0xFF2563EB),
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.dashboard),
-            title: const Text('Dashboard'),
-            onTap: () => context.go('/dashboard'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.description),
-            title: const Text('My Filings'),
-            onTap: () => context.go('/filings'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.receipt),
-            title: const Text('Invoices'),
-            onTap: () => context.go('/invoices'),
-          ),
-          const Divider(),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
-            onTap: () => context.go('/profile'),
-          ),
-          ListTile(
-            leading: const Icon(Icons.logout),
-            title: const Text('Logout'),
-            onTap: () async {
-              await authService.logout();
-              context.go('/login');
-            },
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 12,
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildServiceItem(String label, IconData icon, Color color, VoidCallback onTap) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: color,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDeadlineCard(String title, String period, String date, Color color, String remaining) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(Icons.event, color: color),
+        ),
+        title: Text(
+          '$title - $period',
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text('Due: $date'),
+        trailing: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            remaining,
+            style: TextStyle(
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildActivityItem(String title, String subtitle, String time, IconData icon, Color color) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: color.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Icon(icon, color: color, size: 20),
+        ),
+        title: Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+        subtitle: Text(subtitle, style: const TextStyle(fontSize: 12)),
+        trailing: Text(
+          time,
+          style: TextStyle(color: Colors.grey[600], fontSize: 11),
+        ),
       ),
     );
   }

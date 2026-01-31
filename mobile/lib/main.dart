@@ -4,10 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 import 'config/theme.dart';
-import 'config/api_config.dart';
-import 'services/api_service.dart';
-import 'services/auth_service.dart';
-import 'providers/auth_provider.dart';
 import 'screens/splash_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -16,6 +12,12 @@ import 'screens/filings_screen.dart';
 import 'screens/filing_detail_screen.dart';
 import 'screens/invoices_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/itr_filings_screen.dart';
+import 'screens/tds_filings_screen.dart';
+import 'screens/services_screen.dart';
+import 'screens/vault_screen.dart';
+import 'screens/support_screen.dart';
+import 'screens/analytics_screen.dart';
 
 final FlutterLocalNotificationsPlugin _notificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -31,7 +33,7 @@ void main() async {
   await _notificationsPlugin.initialize(settings);
   
   runApp(
-    ProviderScope(
+    const ProviderScope(
       child: GSTONGOApp(),
     ),
   );
@@ -75,6 +77,7 @@ final GoRouter _router = GoRouter(
       name: 'dashboard',
       builder: (context, state) => const DashboardScreen(),
     ),
+    // GST Filings
     GoRoute(
       path: '/filings',
       name: 'filings',
@@ -83,13 +86,51 @@ final GoRouter _router = GoRouter(
     GoRoute(
       path: '/filings/:id',
       name: 'filing-detail',
-      builder: (context, state) => FilingDetailScreen(id: state.params['id']!),
+      builder: (context, state) => FilingDetailScreen(id: state.pathParameters['id']!),
     ),
+    // ITR Filings
+    GoRoute(
+      path: '/itr',
+      name: 'itr',
+      builder: (context, state) => const ItrFilingsScreen(),
+    ),
+    // TDS Filings
+    GoRoute(
+      path: '/tds',
+      name: 'tds',
+      builder: (context, state) => const TdsFilingsScreen(),
+    ),
+    // Business Services
+    GoRoute(
+      path: '/services',
+      name: 'services',
+      builder: (context, state) => const ServicesScreen(),
+    ),
+    // Document Vault
+    GoRoute(
+      path: '/vault',
+      name: 'vault',
+      builder: (context, state) => const VaultScreen(),
+    ),
+    // Invoices
     GoRoute(
       path: '/invoices',
       name: 'invoices',
       builder: (context, state) => const InvoicesScreen(),
     ),
+    // Support
+    GoRoute(
+      path: '/support',
+      name: 'support',
+      builder: (context, state) => const SupportScreen(),
+    ),
+    // Analytics
+    GoRoute(
+      path: '/analytics',
+      name: 'analytics',
+      builder: (context, state) => const AnalyticsScreen(),
+    ),
+    // Profile
     GoRoute(
       path: '/profile',
       name: 'profile',

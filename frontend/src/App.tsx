@@ -32,6 +32,8 @@ import DocumentVaultPage from './pages/Vault/DocumentVaultPage';
 
 // Phase III Pages
 import SupportPage from './pages/Support/SupportPage';
+import FranchiseManagementPage from './pages/Franchise/FranchiseManagementPage';
+import KnowledgeBasePage from './pages/Help/KnowledgeBasePage';
 
 // Phase IV Pages
 import AnalyticsPage from './pages/Analytics/AnalyticsPage';
@@ -124,6 +126,9 @@ const App: React.FC = () => {
               {/* Support */}
               <Route path="/support" element={<SupportPage />} />
 
+              {/* Knowledge Base / Help */}
+              <Route path="/help" element={<KnowledgeBasePage />} />
+
               {/* Analytics */}
               <Route path="/analytics" element={<AnalyticsPage />} />
 
@@ -136,6 +141,16 @@ const App: React.FC = () => {
                 element={
                   <PrivateRoute roles={['admin']}>
                     <AdminDashboardPage />
+                  </PrivateRoute>
+                }
+              />
+
+              {/* Franchise Management */}
+              <Route
+                path="/franchise"
+                element={
+                  <PrivateRoute roles={['admin', 'franchise_owner']}>
+                    <FranchiseManagementPage />
                   </PrivateRoute>
                 }
               />

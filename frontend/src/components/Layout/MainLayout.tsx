@@ -18,11 +18,20 @@ import {
   TicketIcon,
   ChartBarIcon,
   BanknotesIcon,
+  BookOpenIcon,
+  BuildingStorefrontIcon,
 } from '@heroicons/react/24/outline';
 import { useQuery } from '@tanstack/react-query';
 import { userAPI } from '../../services/api';
 
-const navigation = [
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  roles?: string[];
+}
+
+const navigation: NavItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
   { name: 'GST Filings', href: '/filings', icon: DocumentTextIcon },
   { name: 'ITR Filings', href: '/itr', icon: CalculatorIcon },
@@ -31,7 +40,9 @@ const navigation = [
   { name: 'Document Vault', href: '/vault', icon: FolderIcon },
   { name: 'Invoices', href: '/invoices', icon: CurrencyRupeeIcon },
   { name: 'Support', href: '/support', icon: TicketIcon },
+  { name: 'Help Center', href: '/help', icon: BookOpenIcon },
   { name: 'Analytics', href: '/analytics', icon: ChartBarIcon },
+  { name: 'Franchise', href: '/franchise', icon: BuildingStorefrontIcon, roles: ['admin', 'franchise_owner'] },
   { name: 'Profile', href: '/profile', icon: UserCircleIcon },
 ];
 
@@ -39,6 +50,9 @@ const MainLayout: React.FC = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // In production, this would come from auth context
+  const userRole = 'admin'; // Mock user role
 
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
@@ -54,6 +68,11 @@ const MainLayout: React.FC = () => {
   const isActive = (href: string) => {
     return location.pathname === href || location.pathname.startsWith(href + '/');
   };
+
+  const filteredNavigation = navigation.filter(item => {
+    if (!item.roles) return true;
+    return item.roles.includes(userRole);
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -77,7 +96,7 @@ const MainLayout: React.FC = () => {
             </button>
           </div>
           <nav className="p-4 space-y-1">
-            {navigation.map((item) => (
+            {filteredNavigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
@@ -92,6 +111,15 @@ const MainLayout: React.FC = () => {
               </Link>
             ))}
           </nav>
+          <div className="p-4 border-t">
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-4 py-3 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100"
+            >
+              <ArrowRightOnRectangleIcon className="w-5 h-5 mr-3" />
+              Logout
+            </button>
+          </div>
         </div>
       </div>
 
@@ -102,7 +130,7 @@ const MainLayout: React.FC = () => {
             <span className="text-xl font-bold text-primary-600">GSTONGO</span>
           </div>
           <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-            {navigation.map((item) => (
+            {filteredNavigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
