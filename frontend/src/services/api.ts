@@ -157,6 +157,9 @@ export const userAPI = {
 
   getUnreadCount: () =>
     api.get("notifications/list/unread_count/"),
+
+  changePassword: (data: any) =>
+    api.post("auth/password/change/", data),
 };
 
 
