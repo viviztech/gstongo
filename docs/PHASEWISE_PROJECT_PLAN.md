@@ -380,14 +380,14 @@ Phase I focuses on completing the MVP with all core features operational and dep
 
 #### 1.4.1 Backend Tests
 - [ ] Write unit tests for user models
-- [ ] Write unit tests for filing models
-- [ ] Write unit tests for invoice models
+- [x] Write unit tests for filing models
+- [x] Write unit tests for invoice models
 - [ ] Write unit tests for payment models
-- [ ] Implement API integration tests
+- [x] Implement API integration tests (GST Flow)
 - [ ] Implement authentication tests
 
 #### 1.4.2 Frontend Tests
-- [ ] Implement component tests
+- [x] Implement component tests (Filings Page)
 - [ ] Write API integration tests
 - [ ] Implement E2E tests (Cypress/Playwright)
 - [ ] Write accessibility tests
